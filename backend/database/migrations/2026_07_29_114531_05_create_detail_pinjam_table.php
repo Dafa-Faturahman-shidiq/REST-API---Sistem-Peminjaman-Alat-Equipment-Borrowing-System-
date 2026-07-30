@@ -19,7 +19,7 @@ return new class extends Migration
             // Foreign key constraints
             $table->foreignId('peminjam_id')->constrained('peminjaman')->cascadeOnDelete();
             $table->foreignId('alat_id')->constrained('alat')->cascadeOnDelete();
-        });
+        }); 
     }
 
     /**

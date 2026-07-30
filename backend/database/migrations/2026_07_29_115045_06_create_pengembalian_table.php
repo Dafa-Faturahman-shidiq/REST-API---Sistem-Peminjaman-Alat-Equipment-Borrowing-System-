@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('petugas_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('peminjaman_id')->constrained('peminjaman')->cascadeOnDelete();
         });
-    }
+    } 
 
     /**
      * Reverse the migrations.
