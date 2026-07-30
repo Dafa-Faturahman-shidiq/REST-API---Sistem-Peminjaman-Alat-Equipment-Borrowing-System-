@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign key constraints
-            $table->foreignId('peminjam_id')->constrained('peminjaman')->cascadeOnDelete();
+            $table->foreignId('peminjaman_id')->constrained('peminjaman')->cascadeOnDelete();
             $table->foreignId('alat_id')->constrained('alat')->cascadeOnDelete();
         }); 
     }

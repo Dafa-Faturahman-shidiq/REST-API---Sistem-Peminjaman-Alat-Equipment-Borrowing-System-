@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DetilPinjam extends Model
+class DetailPinjam extends Model
 {
-    protected $table = 'detil_pinjam';
+    protected $table = 'detail_peminjaman';
     protected $fillable = [
-        'peminjam_id',
+        'peminjaman_id',
         'alat_id',
         'jumlah',
     ];
