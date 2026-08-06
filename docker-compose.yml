@@ -45,6 +45,23 @@ services:
     networks:
       - API-UJIKOM
 
+  # 4. SERVER FRONTEND (LARAVEL)
+  frontend-laravel:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-ui
+    working_dir: /var/www
+    ports:
+      - "8001:8000" # Tampil di browser host pada port 8001
+    volumes:
+      - ./frontend:/var/www
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    depends_on:
+      - app-laravel
+    networks:
+      - API-UJIKOM
+
 volumes:
   db_data:
 networks:
