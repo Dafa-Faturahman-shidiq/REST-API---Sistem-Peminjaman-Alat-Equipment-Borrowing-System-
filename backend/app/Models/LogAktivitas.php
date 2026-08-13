@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LogAktivitas extends Model
 {
@@ -15,6 +16,6 @@ class LogAktivitas extends Model
     // fungsi untuk mengatur relasi antara model LogAktivitas dan model User
     public function user() : BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->BelongsTo(User::class);
     }
 }

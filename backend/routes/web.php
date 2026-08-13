@@ -26,8 +26,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', [adminController::class, 'index'])->name('dashboard');
 
     // CRUD Alat
-    Route::get('/alats', [adminController::class, 'indexAlat'])->name('alats.index');
-    Route::post('/alats', [adminController::class, 'storeAlat'])->name('alats.store');
+    Route::get('/alat', [adminController::class, 'indexAlat'])->name('alat.index');
+    Route::post('/alat', [adminController::class, 'storeAlat'])->name('alat.store');
 
     // CRUD User
     Route::get('/users', [adminController::class, 'indexUser'])->name('users.index');
