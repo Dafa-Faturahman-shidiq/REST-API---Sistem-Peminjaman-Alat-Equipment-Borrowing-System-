@@ -8,6 +8,8 @@ use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsPetugas;
 use App\Http\Middleware\IsPeminjam;
 
+use App\Http\Middleware\CheckRole;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -17,9 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            // API
             'role.admin' => IsAdmin::class,
             'role.petugas' => IsPetugas::class,
             'role.peminjam' => IsPeminjam::class,
+            // WEB
+            'role' => CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
