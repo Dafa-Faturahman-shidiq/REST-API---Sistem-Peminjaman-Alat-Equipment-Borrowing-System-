@@ -10,8 +10,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Laravel\Scout\Searchable; // 1. Import Scout Searchable
+
 class User extends Authenticatable
 {
+    use Searchable; // 2. Gunakan trait Searchable di sini
     use HasApiTokens, Notifiable;
 
     protected $table = 'users';
@@ -36,6 +39,16 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+        ];
+    }
+
+    // 3. Tentukan kolom apa saja yang masuk ke index pencarian Elasticsearch
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'nama_alat' => $this->nama_alat,
+            'status_kondisi' => $this->status_kondisi,
         ];
     }
 

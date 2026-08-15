@@ -22,15 +22,29 @@ class adminController extends Controller
     }
 
     // CRUD ALAT : Menampilkan halaman daftar alat
-    public function indexAlat()
+    public function indexAlat(Request $request)
     {
-        $alats = Alat::with('kategori')->get();
+
+        $keyword = $request->input('search', '');
+
+        if (!empty($keyword)) {
+            // 2. Jika ada kata kunci, cari via Elasticsearch lalu paginate (misal 10 data per halaman)
+            $alats = Alat::search($keyword)->paginate(10);
+            
+            // Agar kata kunci pencarian tetap ada di URL saat berpindah halaman pagination
+            $alats->appends(['search' => $keyword]);
+        } else {
+            // 3. Jika tidak mencari, tampilkan data biasa dengan paginasi database
+            $alats = Alat::with('kategori')->paginate(10);
+        }
+        
         return view('admin.alat.index', compact('alats'));
     }
 
     // MENYIMMPAN ALAT : Menyimpan data alat baru ke database
     public function storeAlat(Request $request)
     {
+
         $request->validate([
             'kategori_id' => 'required',
             'nama_alat' => 'required|string|max:255',
@@ -50,9 +64,23 @@ class adminController extends Controller
     }
 
     // CRUD USER : Menampilkan halaman daftar user
-    public function indexUser()
+    public function indexUser(Request $request)
     {
-        $users = User::all();
+        $keyword = $request->input('search', '');
+
+        if (!empty($keyword)) {
+            $users = User::where('name', 'like', "%{$keyword}%")->paginate(10);
+            $users->appends(['search' => $keyword]);
+        } else {
+            $users = User::paginate(10);
+        }
+
         return view('admin.user.index', compact('users'));
+    }
+
+    // CRUD USER : Menampilkan halaman form untuk membuat user baru
+    public function createUser()
+    {
+        return view('admin.user.create');
     }
 }

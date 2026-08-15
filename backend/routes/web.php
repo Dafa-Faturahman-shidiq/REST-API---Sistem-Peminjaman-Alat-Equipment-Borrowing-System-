@@ -31,6 +31,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // CRUD User
     Route::get('/users', [adminController::class, 'indexUser'])->name('users.index');
+    Route::get('/users/create', [adminController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [adminController::class, 'storeUser'])->name('users.store');
+    Route::get('/users/{id}/edit', [adminController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{id}', [adminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{id}', [adminController::class, 'destroyUser'])->name('users.destroy');
 });
 
 // * ROUTES UNTUK PETUGAS
