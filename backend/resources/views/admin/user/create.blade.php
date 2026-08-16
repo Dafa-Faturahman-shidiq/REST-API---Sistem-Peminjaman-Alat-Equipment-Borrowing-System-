@@ -53,6 +53,17 @@
                 @enderror
             </div>
 
+            <!-- Input Konfirmasi Password -->
+            <div class="space-y-2">
+                <label class="block text-slate-700 text-sm font-semibold">Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" required
+                       class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm"
+                       placeholder="••••••••">
+                @error('password_confirmation') 
+                    <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> 
+                @enderror
+            </div>
+
             <!-- Select Role / Hak Akses -->
             <div class="space-y-2">
                 <label class="block text-slate-700 text-sm font-semibold">Role / Hak Akses</label>
