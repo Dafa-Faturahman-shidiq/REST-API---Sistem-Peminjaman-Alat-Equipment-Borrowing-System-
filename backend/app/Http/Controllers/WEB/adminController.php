@@ -135,6 +135,7 @@ class adminController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $id, // Pastikan email unik kecuali untuk user yang sedang diedit
             'role' => 'required|in:admin,petugas,peminjam',
             'no_hp' => 'nullable|string|max:15',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         // 3. Update data user di database

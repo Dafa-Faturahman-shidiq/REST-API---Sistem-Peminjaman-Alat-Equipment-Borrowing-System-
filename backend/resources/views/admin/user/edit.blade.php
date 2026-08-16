@@ -17,15 +17,16 @@
         </div>
 
         <!-- Form Body -->
-        <form action="{{ route('admin.users.store') }}" method="POST" class="p-8 space-y-6">
+        <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="p-8 space-y-6">
             @csrf
+            @method('PUT')
 
             <!-- Input Nama Lengkap -->
             <div class="space-y-2">
                 <label class="block text-slate-700 text-sm font-semibold">Nama Lengkap</label>
-                <input type="text" name="name" value="{{ old('name') }}" required
+                <input type="text" name="name" value="{{ old('name', $user->name) }}" required
                        class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm"
-                       placeholder="Masukkan nama lengkap..." value="{{ old('name') }}">
+                       placeholder="Masukkan nama lengkap..." value="{{ old('name', $user->name) }}">
                 @error('name') 
                     <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> 
                 @enderror
@@ -34,9 +35,9 @@
             <!-- Input Email -->
             <div class="space-y-2">
                 <label class="block text-slate-700 text-sm font-semibold">Email Address</label>
-                <input type="email" name="email" value="{{ old('email') }}" required
+                <input type="email" name="email" value="{{ old('email', $user->email) }}" required
                        class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm"
-                       placeholder="nama@example.com" value="{{ old('email') }}">
+                       placeholder="nama@example.com" value="{{ old('email', $user->email) }}">
                 @error('email') 
                     <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> 
                 @enderror
@@ -53,14 +54,25 @@
                 @enderror
             </div>
 
+            <!-- Input Konfirmasi Password -->
+            <div class="space-y-2">
+                <label class="block text-slate-700 text-sm font-semibold">Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" required
+                       class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm"
+                       placeholder="••••••••">
+                @error('password_confirmation') 
+                    <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> 
+                @enderror
+            </div>
+
             <!-- Select Role / Hak Akses -->
             <div class="space-y-2">
                 <label class="block text-slate-700 text-sm font-semibold">Role / Hak Akses</label>
                 <select name="role" required 
                         class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm cursor-pointer">
-                    <option value="peminjam" {{ old('role') == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
-                    <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
-                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="peminjam" {{ old('role', $user->role) == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
+                    <option value="petugas" {{ old('role', $user->role) == 'petugas' ? 'selected' : '' }}>Petugas</option>
+                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
                 @error('role') 
                     <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> 
@@ -70,7 +82,7 @@
             <!-- Input No. HP -->
             <div class="space-y-2">
                 <label class="block text-slate-700 text-sm font-semibold">No. HP <span class="text-slate-400 font-normal">(Opsional)</span></label>
-                <input type="text" name="no_hp" value="{{ old('no_hp') }}"
+                <input type="text" name="no_hp" value="{{ old('no_hp', $user->no_hp) }}"
                        class="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 text-sm outline-none transition-all duration-300 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-sm"
                        placeholder="08xxxxxxxxxx" >
                 @error('no_hp') 
