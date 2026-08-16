@@ -32,7 +32,7 @@ class Peminjaman extends Model
     }
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model Detail Peminjaman
-    public function detailPinjam(): HasMany {
+    public function detailPinjams(): HasMany {
         return $this->hasMany(DetailPinjam::class);
     }
 

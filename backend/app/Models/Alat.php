@@ -34,7 +34,7 @@ class Alat extends Model
     }
 
     // fungsi untuk mengatur relasi antara model Alat dan model Detail Peminjaman
-    public function detailPeminjam(): HasMany
+    public function detailPinjams(): HasMany
     {
         return $this->hasMany(DetailPeminjam::class);
     }
