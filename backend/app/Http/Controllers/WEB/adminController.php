@@ -5,6 +5,7 @@ namespace App\Http\Controllers\WEB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\LogAktivitas;
 use App\Models\Alat;
@@ -12,6 +13,7 @@ use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use App\Models\User;
 use App\Models\Kategori;
+use App\Models\DetailPinjam;
 
 
 class adminController extends Controller
@@ -24,7 +26,7 @@ class adminController extends Controller
     }
 
 
-    // ======================= CRUD ALAT =======================
+    //! ======================= CRUD ALAT =======================
     //* CRUD ALAT : Menampilkan halaman daftar alat
     public function indexAlat(Request $request)
     {
@@ -154,7 +156,7 @@ class adminController extends Controller
         return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil dihapus.');
     }
 
-    // ======================= CRUD USER =======================
+    //! ======================= CRUD USER =======================
 
     //* CRUD USER : Menampilkan halaman daftar user
     public function indexUser(Request $request)
@@ -275,7 +277,7 @@ class adminController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 
-    // ======================= CRUD KATEGORI =======================
+    //! ======================= CRUD KATEGORI =======================
 
     // * CRUD KATEGORI : Menampilkan halaman daftar kategori
     public function indexKategori(Request $request)
@@ -369,4 +371,152 @@ class adminController extends Controller
 
         return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus.');
     }
-}
+
+    //! ======================= CRUD PEMINJAMAN =======================
+
+    // * CRUD PEMINJAMAN : Menampilkan halaman daftar peminjaman
+    public function indexPeminjaman(Request $request)
+    {
+        $search = $request->input('search', '');
+
+        $peminjamans = Peminjaman::with('user', 'detailPinjams.alat') 
+            ->when($search, function ($query, $search) {
+                return $query->whereHas('user', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })->orWhereHas('detailPinjams.alat', function ($query) use ($search) { // PERBAIKAN DI SINI
+                    $query->where('nama_alat', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.peminjaman.index', compact('peminjamans', 'search'));
+    }
+
+    // * CRUD PEMINJAMAN : Menampilkan halaman form untuk membuat peminjaman baru
+    public function createPeminjaman()
+    {
+        $users = User::where('role', 'peminjam')->get(); // Ambil semua user dengan role peminjam
+        $alats = Alat::where('stok', '>', 0)->get();
+        return view('admin.peminjaman.create', compact('users', 'alats'));
+    }
+
+    // * CRUD PEMINJAMAN : Menyimpan data peminjaman baru ke database
+    public function storePeminjaman(Request $request)
+    {
+        // 1. Validasi disesuaikan dengan nama input di form Blade
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'tgl_pinjam' => 'required|date',
+            'tgl_kembali_plan' => 'required|date|after_or_equal:tgl_pinjam',
+            'alat_id' => 'required|array',
+            'alat_id.*' => 'required|exists:alat,id',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // 2. Buat transaksi peminjaman baru (sesuai nama kolom form: tgl_pinjam)
+            $peminjaman = Peminjaman::create([
+                'user_id' => $request->user_id,
+                'tgl_pinjam' => $request->tgl_pinjam,
+                'tgl_kembali_plan' => $request->tgl_kembali_plan,
+                'status' => 'diajukan', // Status awal peminjaman
+            ]);
+
+            // 3. Simpan detail alat yang dipinjam (Looping array dari name="alat_id[]" dan name="jumlah[]")
+            foreach ($request->alat_id as $index => $alat_id) {
+                $jumlah_pinjam = $request->jumlah[$index];
+
+                $alat = Alat::findOrFail($alat_id);
+
+                // Validasi stok alat
+                if ($alat->stok < $jumlah_pinjam) {
+                    throw new \Exception("Stok alat '{$alat->nama_alat}' tidak mencukupi (Sisa stok: {$alat->stok}).");
+                }
+
+                DetailPinjam::create([
+                    'peminjaman_id' => $peminjaman->id,
+                    'alat_id' => $alat_id,
+                    'jumlah' => $jumlah_pinjam,
+                ]);
+            }
+
+            // 4. PERBAIKAN UTAMA: Commit dan Redirect diletakkan di LUAR looping foreach!
+            DB::commit();
+
+            return redirect()->route('admin.peminjaman.index')->with('success', 'Data peminjaman berhasil ditambahkan.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+    }
+
+    // * CRUD PEMINJAMAN : // 4. Memperbarui status peminjaman (Misal: dari diajukani ke disetujui, dipinjam, dikembalikan, dll.)
+    public function updateStatusPeminjaman(Request $request, $id)
+    {
+        $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:diajukan,dipinjam,selesai,telat'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $statuslama= $peminjaman->status;
+            $statusbaru= $request->status;
+
+            // logika pengelolaan stock otomatis 
+            if ($statuslama != 'dipinjam' && $statusbaru == 'dipinjam') {
+
+                // kurangi stock karena barang resmi di pinjam
+                foreach ($peminjaman->detailPinjams as $detail) {
+                    $alat = $detail->alat;
+
+                    if ($alat->stok < $detail->jumlah) {
+                        throw new \Exception("Stok alat '{$alat->nama_alat}' tidak mencukupi.");
+                    }
+
+                   $alat->decrement('stok', $detail->jumlah);
+                }
+            } elseif ($statuslama == 'dipinjam' && ($statusbaru === 'selesai' || $statusbaru === 'telat')) {
+                // Kembalikan stok karena barang sudah dikembalikan (selesai)
+                foreach ($peminjaman->detailPinjams as $detail) {
+                    $detail->alat->increment('stok', $detail->jumlah);
+                }
+            }  
+            
+            $peminjaman->update(['status' => $statusbaru]);
+
+            DB::commit();
+            return redirect()->route('admin.peminjaman.index')->with('success', 'Status peminjaman berhasil diperbarui.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+    }
+
+    //* CRUD PEMIJAMAM Menghapus data peminjaman
+
+    public function destroyPeminjaman($id)
+    {
+        $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
+
+        // Jika statusnya sedang dipinjam, kembalikan stok terlebih dahulu sebelum dihapus
+        if ($peminjaman->status == 'dipinjam') {
+            foreach ($peminjaman->detailPinjams as $detail) {
+                $detail->alat->increment('stok', $detail->jumlah);
+            };
+        }
+
+        $peminjaman->delete();
+
+        return redirect()->route('admin.peminjaman.index')->with('success', 'Data peminjaman berhasil dihapus.');
+    }
+ }

@@ -49,6 +49,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/kategori/{id}/edit', [adminController::class, 'editKategori'])->name('kategori.edit');
     Route::put('/kategori/{id}', [adminController::class, 'updateKategori'])->name('kategori.update');
     Route::delete('/kategori/{id}', [adminController::class, 'destroyKategori'])->name('kategori.destroy');
+
+    // CRUD PEMINJAMAN
+    Route::get('/peminjaman', [adminController::class, 'indexPeminjaman'])->name('peminjaman.index');
+    Route::get('/peminjaman/create', [adminController::class, 'createPeminjaman'])->name('peminjaman.create');
+    Route::post('/peminjaman', [adminController::class, 'storePeminjaman'])->name('peminjaman.store');
+    Route::put('/peminjaman/{id}/status', [adminController::class, 'updateStatusPeminjaman'])->name('peminjaman.updateStatus');
+    Route::delete('/peminjaman/{id}', [adminController::class, 'destroyPeminjaman'])->name('peminjaman.destroy');
 });
 
 // * ROUTES UNTUK PETUGAS
