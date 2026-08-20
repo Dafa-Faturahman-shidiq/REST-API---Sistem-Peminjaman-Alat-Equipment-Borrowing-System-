@@ -28,21 +28,27 @@ class adminController extends Controller
     //* CRUD ALAT : Menampilkan halaman daftar alat
     public function indexAlat(Request $request)
     {
+        $search = $request->input('search', '');
 
-        $keyword = $request->input('search', '');
+        $alats = Alat::with('kategori') // Eager load kategori untuk menghindari N+1 problem
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_alat', 'like', "%{$search}%")
+                             ->orWhereHas('kategori', function ($query) use ($search) {
+                                 $query->where('nama_kategori', 'like', "%{$search}%");
+                             });
+            })
+            ->latest()
+            ->paginate(10) // Tampilkan 10 data per halaman  
+            ->withQueryString(); // Agar query string tetap ada saat berpindah halaman pagination
 
-        if (!empty($keyword)) {
-            // 2. Jika ada kata kunci, cari via Elasticsearch lalu paginate (misal 10 data per halaman)
-            $alats = Alat::search($keyword)->paginate(10);
-            
-            // Agar kata kunci pencarian tetap ada di URL saat berpindah halaman pagination
-            $alats->appends(['search' => $keyword]);
-        } else {
-            // 3. Jika tidak mencari, tampilkan data biasa dengan paginasi database
-            $alats = Alat::with('kategori')->paginate(10);
-        }
-        
         return view('admin.alat.index', compact('alats'));
+    }
+
+    // * CRUD ALAT : Menampilkan form alat baru
+    public function createAlat()
+    {
+        $kategoris = Kategori::all(); // Ambil semua kategori untuk dropdown
+        return view('admin.alat.create', compact('kategoris'));
     }
 
     //* MENYIMMPAN ALAT : Menyimpan data alat baru ke database
@@ -50,13 +56,25 @@ class adminController extends Controller
     {
 
         $request->validate([
-            'kategori_id' => 'required',
             'nama_alat' => 'required|string|max:255',
+            'kategori_id' => 'required|exists:kategori,id',
             'stok' => 'required|integer|min:0',
             'status_kondisi' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Maksimal 2MB
         ]);
 
-        Alat::create($request->all());
+        $data = $request->all();
+        
+        // handle file upload jika ada
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/alats'), $filename);
+            $data['gambar'] = $filename;
+        }
+            
+        Alat::create($data);
 
         //1. Catat log aktivitas
         LogAktivitas::create([
@@ -64,7 +82,76 @@ class adminController extends Controller
             'aktivitas' => 'Menambahkan alat baru: ' . $request->nama_alat,
         ]);
 
-        return redirect()->back()->with('success', 'Alat berhasil ditambahkan.');
+        return redirect()->route('admin.alat.index')->with('success', 'Alat berhasil ditambahkan.');
+    }
+
+    // * CRUD ALAT : Menampilkan halaman form untuk mengedit alat
+    public function editAlat($id)
+    {
+        $alat = Alat::findOrFail($id);
+        $kategoris = Kategori::all(); // Ambil semua kategori untuk dropdown
+        return view('admin.alat.edit', compact('alat', 'kategoris'));
+    }
+
+    // * CRUD ALAT : Menyimpan perubahan data alat ke database
+    public function updateAlat(Request $request, $id)
+    {
+        $alat = Alat::findOrFail($id);
+
+        $request->validate([
+            'nama_alat' => 'required|string|max:255',
+            'kategori_id' => 'required|exists:kategori,id',
+            'stok' => 'required|integer|min:0',
+            'status_kondisi' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Maksimal 2MB
+        ]);
+
+        $data = $request->all();
+
+        // handle file upload jika ada
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama jika ada
+            if ($alat->gambar && file_exists(public_path('storage/alats/' . $alat->gambar))) {
+                unlink(public_path('storage/alats/' . $alat->gambar));
+            }
+
+            $file = $request->file('gambar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/alats'), $filename);
+            $data['gambar'] = $filename;
+        }
+
+        $alat->update($data);
+
+        // Catat log aktivitas
+        LogAktivitas::create([
+            'user_id' => auth()->user()->id,
+            'aktivitas' => 'Mengupdate alat: ' . $alat->nama_alat,
+        ]);
+
+        return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil diperbarui.');
+    }
+
+    // * CRUD ALAT : Menghapus alat dari database
+    public function destroyAlat($id)
+    {
+        $alat = Alat::findOrFail($id);
+
+        // Hapus file gambar fisik jika ada
+        if ($alat->gambar && file_exists(public_path('storage/alats/' . $alat->gambar))) {
+            unlink(public_path('storage/alats/' . $alat->gambar));
+        }
+
+        $alat->delete();
+
+        // Catat log aktivitas
+        LogAktivitas::create([
+            'user_id' => auth()->user()->id,
+            'aktivitas' => 'Menghapus alat: ' . $alat->nama_alat,
+        ]);
+
+        return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil dihapus.');
     }
 
     // ======================= CRUD USER =======================
