@@ -56,6 +56,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/peminjaman', [adminController::class, 'storePeminjaman'])->name('peminjaman.store');
     Route::put('/peminjaman/{id}/status', [adminController::class, 'updateStatusPeminjaman'])->name('peminjaman.updateStatus');
     Route::delete('/peminjaman/{id}', [adminController::class, 'destroyPeminjaman'])->name('peminjaman.destroy');
+
+    // CRUD Pengembalian
+    Route::get('/pengembalian', [adminController::class, 'indexPengembalian'])->name('pengembalian.index');
+    Route::get('/peminjaman/{id}/kembali', [adminController::class, 'createPengembalian'])->name('peminjaman.kembali'); // <-- Pastikan ini ada
+    Route::post('/pengembalian/{id}', [adminController::class, 'storePengembalian'])->name('pengembalian.store');
+    Route::delete('/pengembalian/{id}', [adminController::class, 'destroyPengembalian'])->name('pengembalian.destroy');
 });
 
 // * ROUTES UNTUK PETUGAS

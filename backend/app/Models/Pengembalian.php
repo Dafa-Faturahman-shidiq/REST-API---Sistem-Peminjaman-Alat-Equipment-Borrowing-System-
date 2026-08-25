@@ -9,9 +9,10 @@ class Pengembalian extends Model
 {
     protected $table = 'pengembalian';
     protected $fillable = [
-        'peminjam_id',
+        'peminjaman_id',
         'tgl_kembali',
         'kondisi_kembali',
+        'deskripsi',
         'denda',
         'petugas_id'
     ];

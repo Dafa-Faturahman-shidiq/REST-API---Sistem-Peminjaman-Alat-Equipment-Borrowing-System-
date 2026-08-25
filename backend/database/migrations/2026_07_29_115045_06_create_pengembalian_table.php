@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('pengembalian', function (Blueprint $table) {
             $table->id();
             $table->date('tgl_kembali');
-            $table->string('kondisi_kembali');
+            $table->enum('kondisi_kembali', ['baik', 'rusak_ringan', 'rusak_berat', 'hilang'])->default('baik');
+            $table->string('deskripsi');
             $table->integer('denda')->default(0);
             $table->timestamps();
 
