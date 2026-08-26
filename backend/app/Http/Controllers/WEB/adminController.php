@@ -21,8 +21,24 @@ class adminController extends Controller
     //* 1. Menampilkan halaman dashboard admin dan log aktivitas
     public function index()
     {
-        $logs = LogAktivitas::latest()->take(10)->get();
-        return view('admin.dashboard', compact('logs'));
+        // Mengambil data untuk ringkasan dashboard
+        $total_alat = Alat::count(); 
+        $stok_tersedia = Alat::sum('stok'); 
+
+        // Status disesuaikan dengan enum/kolom di database Anda
+        $sedang_dipinjam = Peminjaman::where('status', 'dipinjam')->count(); 
+        $menunggu_persetujuan = Peminjaman::where('status', 'diajukan')->count();
+
+        // Mengambil log aktivitas
+        $logs = LogAktivitas::with('user')->latest()->take(5)->get();
+
+        return view('admin.dashboard', compact(
+            'total_alat', 
+            'stok_tersedia', 
+            'sedang_dipinjam', 
+            'menunggu_persetujuan',
+            'logs'
+        ));
     }
 
 

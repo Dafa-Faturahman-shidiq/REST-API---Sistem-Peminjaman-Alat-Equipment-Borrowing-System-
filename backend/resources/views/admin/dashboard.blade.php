@@ -34,6 +34,71 @@
         </div>
     </div>
 
+    <!-- GRID STATISTIK RINGKASAN (NEW) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- Card 1: Total Semua Alat -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500">Total Macam Alat</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ $total_alat ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Alat Tersedia -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-emerald-100/50 hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500">Total Stok Tersedia</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ $stok_tersedia ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Alat Sedang Dipinjam -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-purple-100/50 hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500">Sedang Dipinjam</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ $sedang_dipinjam ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Menunggu Persetujuan -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-amber-100/50 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+            <!-- Indikator Dot Pulse jika ada request pending -->
+            @if(($menunggu_persetujuan ?? 0) > 0)
+                <span class="absolute top-4 right-4 flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+            @endif
+
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-500">Menunggu Approval</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ $menunggu_persetujuan ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- TABEL LOG AKTIVITAS (Modern Card Style) -->
     <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50">
         
