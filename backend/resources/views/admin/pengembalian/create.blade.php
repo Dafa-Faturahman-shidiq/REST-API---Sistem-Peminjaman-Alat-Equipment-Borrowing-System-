@@ -80,14 +80,38 @@
             </div>
 
             <!-- Input Estimasi Denda (Otomatis & Readonly) -->
-            <div class="space-y-2">
-                <label class="block text-slate-700 text-sm font-semibold">Estimasi Total Denda <span class="text-slate-400 font-normal">(Terhitung Otomatis)</span></label>
+            <div class="space-y-3 p-5 bg-slate-50 border border-slate-200 rounded-xl">
+                <label class="block text-slate-700 text-sm font-semibold">Total Denda <span class="text-slate-400 font-normal">(Terhitung Otomatis)</span></label>
+                
+                <!-- Input Hidden / Readonly untuk dikirim form jika diperlukan -->
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 font-bold text-sm">Rp</span>
                     <input type="text" name="denda" id="denda_input" value="0" readonly
-                           class="w-full pl-12 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-600 font-bold text-sm outline-none cursor-not-allowed">
+                           class="w-full pl-12 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-bold text-sm outline-none cursor-not-allowed">
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Denda Keterlambatan: Rp 2.000/hari + Denda Kondisi Barang.</p>
+
+                <!-- Kotak Rincian Denda (Muncul jika ada denda) -->
+                <div id="rincian_denda_box" class="hidden mt-4 space-y-2 pt-3 border-t border-slate-200">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Rincian Denda:</p>
+                    
+                    <!-- Rincian Keterlambatan -->
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600">Keterlambatan (<span id="hari_telat" class="font-semibold">0</span> hari x Rp 2.000)</span>
+                        <span class="font-semibold text-slate-800" id="nominal_telat">Rp 0</span>
+                    </div>
+
+                    <!-- Rincian Kondisi -->
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600">Kondisi Barang (<span id="label_kondisi" class="italic">Baik</span>)</span>
+                        <span class="font-semibold text-slate-800" id="nominal_kondisi">Rp 0</span>
+                    </div>
+
+                    <!-- Total Akhir -->
+                    <div class="flex justify-between items-center text-sm font-bold pt-2 mt-2 border-t border-slate-200 border-dashed">
+                        <span class="text-slate-800">Total Denda Harus Dibayar</span>
+                        <span class="text-red-600 text-base" id="nominal_total">Rp 0</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Tombol Aksi -->
@@ -106,43 +130,95 @@
 
     </div>
 
-    </div>
-
 <!-- Script JavaScript untuk Perhitungan Denda Real-Time -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const tglRencana = new Date("{{ $peminjaman->tgl_kembali_plan }}");
+            // Data dari backend
+            const tglRencanaStr = "{{ $peminjaman->tgl_kembali_plan }}";
+            
+            // Set jam ke 00:00:00 untuk perbandingan tanggal yang akurat
+            const tglRencana = new Date(tglRencanaStr);
+            tglRencana.setHours(0, 0, 0, 0);
+
+            // Elemen DOM
             const inputTglKembali = document.getElementById('tgl_kembali');
             const selectKondisi = document.getElementById('kondisi_kembali');
             const inputDenda = document.getElementById('denda_input');
+            
+            // Elemen Rincian Denda
+            const rincianBox = document.getElementById('rincian_denda_box');
+            const elHariTelat = document.getElementById('hari_telat');
+            const elNominalTelat = document.getElementById('nominal_telat');
+            const elLabelKondisi = document.getElementById('label_kondisi');
+            const elNominalKondisi = document.getElementById('nominal_kondisi');
+            const elNominalTotal = document.getElementById('nominal_total');
+
+            // Format angka ke Rupiah
+            const formatRupiah = (angka) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(angka);
+            };
 
             function hitungTotalDenda() {
                 let dendaTelat = 0;
                 let dendaKondisi = 0;
+                let diffDays = 0;
 
                 // 1. Hitung Denda Keterlambatan
                 const tglAktual = new Date(inputTglKembali.value);
+                tglAktual.setHours(0, 0, 0, 0);
+
                 if (tglAktual > tglRencana) {
                     const diffTime = Math.abs(tglAktual - tglRencana);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     dendaTelat = diffDays * 2000;
                 }
 
                 // 2. Hitung Denda Kondisi Barang
                 const kondisi = selectKondisi.value;
-                if (kondisi === 'rusak_ringan') dendaKondisi = 20000;
-                else if (kondisi === 'rusak_berat') dendaKondisi = 50000;
-                else if (kondisi === 'hilang') dendaKondisi = 100000;
+                let labelKondisiText = "Baik / Lengkap";
 
-                // 3. Tampilkan Akumulasi
-                inputDenda.value = dendaTelat + dendaKondisi;
+                if (kondisi === 'rusak_ringan') {
+                    dendaKondisi = 20000;
+                    labelKondisiText = "Rusak Ringan";
+                } else if (kondisi === 'rusak_berat') {
+                    dendaKondisi = 50000;
+                    labelKondisiText = "Rusak Berat";
+                } else if (kondisi === 'hilang') {
+                    dendaKondisi = 100000;
+                    labelKondisiText = "Hilang";
+                }
+
+                // 3. Kalkulasi Total
+                const totalDenda = dendaTelat + dendaKondisi;
+
+                // 4. Update UI
+                inputDenda.value = totalDenda; // Value murni (angka) untuk dikirim ke DB jika diperlukan
+                
+                // Update text rincian
+                elHariTelat.textContent = diffDays;
+                elNominalTelat.textContent = formatRupiah(dendaTelat);
+                elLabelKondisi.textContent = labelKondisiText;
+                elNominalKondisi.textContent = formatRupiah(dendaKondisi);
+                elNominalTotal.textContent = formatRupiah(totalDenda);
+
+                // Tampilkan atau sembunyikan kotak rincian berdasarkan total denda
+                if (totalDenda > 0) {
+                    rincianBox.classList.remove('hidden');
+                } else {
+                    rincianBox.classList.add('hidden');
+                }
             }
 
-            // Jalankan perhitungan setiap kali tanggal atau kondisi diubah
+            // Event Listeners
             inputTglKembali.addEventListener('change', hitungTotalDenda);
             selectKondisi.addEventListener('change', hitungTotalDenda);
             
-            // Jalankan sekali saat halaman dimuat
+            // Initial call saat halaman diload
             hitungTotalDenda();
         });
     </script>
