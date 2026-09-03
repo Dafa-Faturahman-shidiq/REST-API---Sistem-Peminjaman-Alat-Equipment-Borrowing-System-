@@ -45,6 +45,8 @@
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-4">Menu Utama</p>
                 
+                {{-- MENU KHUSUS ADMIN --}}
+                @if(auth()->user()->role == 'admin')
                 <!-- Link Dashboard -->
                 <a href="{{ route('admin.dashboard') }}" class="group flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 hover:translate-x-1 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-600/80 text-white shadow-lg shadow-indigo-900/20 backdrop-blur-sm' : '' }}">
                     <svg class="w-5 h-5 transition-colors group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -80,6 +82,22 @@
                     <svg class="w-5 h-5 transition-colors group-hover:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                     <span class="font-medium">Kelola Pengembalian</span>
                 </a>
+                @endif
+
+                <!-- MENU KHUSUS PETUGAS -->
+                @if(auth()->user()->role === 'petugas')
+                    <a href="{{ route('petugas.peminjaman.index') }}"
+                       class="block px-4 py-2 rounded-lg transition {{ request()->routeIs('petugas.peminjaman*') ? 'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+                        Persetujuan Peminjaman</a>
+
+                    <a href="{{ route('petugas.pengembalian.index') }}"
+                       class="block px-4 py-2 rounded-lg transition {{ request()->routeIs('petugas.pengembalian*') ? 'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+                        Pemantauan Pengembalian</a>
+
+                    <a href="{{ route('petugas.laporan.index') }}"
+                       class="block px-4 py-2 rounded-lg transition {{ request()->routeIs('petugas.laporan*') ? 'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+                        Cetak Laporan</a>
+                @endif
             </nav>
 
             <!-- User Profile Card -->

@@ -69,9 +69,16 @@ Route::middleware(['auth', 'role:petugas,admin'])->prefix('petugas')->name('petu
     // * PEMINJAMAN DAN PERSETUJUAN
     Route::get('/peminjaman', [petugasController::class, 'indexPeminjaman'])->name('peminjaman.index');
     Route::post('/peminjaman/{id}/setujui', [petugasController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui');
+    Route::post('/peminjaman/{id}/tolak', [petugasController::class, 'tolakPeminjaman'])->name('peminjaman.tolak');
     
     // * PENGEMBALIAN & DENDA
+    Route::get('/pengembalian', [petugasController::class, 'indexPengembalian'])->name('pengembalian.index');
     Route::post('/pengembalian/{id}', [petugasController::class, 'prosesPengembalian'])->name('pengembalian.proses');
+
+    // *CETAK LAPORAN
+    Route::get('/laporan', [petugasController::class, 'laporan'])->name('laporan.index');
+    Route::get('/laporan/cetak', [petugasController::class, 'cetakLaporan'])->name('laporan.cetak');
+
 });
 
 //* PEMINJAM
