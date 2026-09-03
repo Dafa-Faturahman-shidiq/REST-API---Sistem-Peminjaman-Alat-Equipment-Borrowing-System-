@@ -94,12 +94,6 @@ class adminController extends Controller
             
         Alat::create($data);
 
-        //1. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menambahkan alat baru: ' . $request->nama_alat,
-        ]);
-
         return redirect()->route('admin.alat.index')->with('success', 'Alat berhasil ditambahkan.');
     }
 
@@ -142,12 +136,6 @@ class adminController extends Controller
 
         $alat->update($data);
 
-        // Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Mengupdate alat: ' . $alat->nama_alat,
-        ]);
-
         return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil diperbarui.');
     }
 
@@ -162,12 +150,6 @@ class adminController extends Controller
         }
 
         $alat->delete();
-
-        // Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menghapus alat: ' . $alat->nama_alat,
-        ]);
 
         return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil dihapus.');
     }
@@ -216,12 +198,6 @@ class adminController extends Controller
             'no_hp' => $request->no_hp,
         ]);
 
-        //3. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menambahkan user baru: ' . $request->name,
-        ]);
-
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
@@ -261,12 +237,6 @@ class adminController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        // 5. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Mengupdate user: ' . $user->name,
-        ]);
-
         // 6. Update data user
         $user->update($data);
 
@@ -282,12 +252,6 @@ class adminController extends Controller
 
         // 2. Hapus user dari database
         $user->delete();
-
-        // 3. Catat log aktivitas sebelum menghapus user
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menghapus user: ' . $user->name,
-        ]);
 
         // 4. Redirect kembali ke halaman daftar user dengan pesan sukses
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
@@ -329,12 +293,6 @@ class adminController extends Controller
             'nama_kategori' => $request->nama_kategori,
         ]);
 
-        // 3. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menambahkan kategori baru: ' . $request->nama_kategori,
-        ]);
-
         return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
 
@@ -361,12 +319,6 @@ class adminController extends Controller
             'nama_kategori' => $request->nama_kategori,
         ]);
 
-        // 4. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Mengupdate kategori: ' . $kategori->nama_kategori,
-        ]);
-
         return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil diperbarui.');
     }
 
@@ -378,12 +330,6 @@ class adminController extends Controller
 
         // 2. Hapus data kategori dari database
         $kategori->delete();
-
-        // 3. Catat log aktivitas
-        LogAktivitas::create([
-            'user_id' => auth()->user()->id,
-            'aktivitas' => 'Menghapus kategori: ' . $kategori->nama_kategori,
-        ]);
 
         return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus.');
     }
@@ -633,11 +579,6 @@ class adminController extends Controller
                     $detail->alat->increment('stok', $detail->jumlah);
                 }
             }
-
-            LogAktivitas::create([
-                'user_id' => auth()->id(),
-                'aktivitas' => 'Memproses pengembalian peminjaman ID: ' . $peminjaman->id . ' | Denda: Rp ' . number_format($total_denda, 0, ',', '.'),
-            ]);
 
             DB::commit();
             return redirect()->route('admin.pengembalian.index')->with('success', 'Pengembalian diproses. Total Denda: Rp ' . number_format($total_denda, 0, ',', '.'));

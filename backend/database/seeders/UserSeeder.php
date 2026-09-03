@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'Bagus Karim',
+                'name' => 'Dafa Faturahman Shidiq',
                 'email' => 'admin@gmail.com',
                 'password' => Hash::make('password123'),
                 'role' => 'admin',
@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
                 'alamat' => 'Bandung, West Java',
             ],
             [
-                'name' => 'Arif Muhammad',
+                'name' => 'Dafa_Petugas',
                 'email' => 'petugas@gmail.com',
                 'password' => Hash::make('password123'),
                 'role' => 'petugas',
@@ -30,24 +30,24 @@ class UserSeeder extends Seeder
                 'alamat' => 'Baleendah, Bandung',
             ],
             [
-                'name' => 'Rian Setiawan',
-                'email' => 'rian@gmail.com',
+                'name' => 'Dafa_peminjam',
+                'email' => 'mapin@gmail.com',
                 'password' => Hash::make('password123'),
                 'role' => 'peminjam',
                 'no_hp' => '083456789012',
                 'alamat' => 'Ciparay, Bandung',
             ],
             [
-                'name' => 'Siti Aminah',
-                'email' => 'siti@gmail.com',
+                'name' => 'Daus merdeka',
+                'email' => 'daus@gmail.com',
                 'password' => Hash::make('password123'),
                 'role' => 'peminjam',
                 'no_hp' => '084567890123',
                 'alamat' => 'Dayeuhkolot, Bandung',
             ],
             [
-                'name' => 'Eka Pratama',
-                'email' => 'eka@gmail.com',
+                'name' => 'charles morales',
+                'email' => 'charles@gmail.com',
                 'password' => Hash::make('password123'),
                 'role' => 'peminjam',
                 'no_hp' => '085678901234',
