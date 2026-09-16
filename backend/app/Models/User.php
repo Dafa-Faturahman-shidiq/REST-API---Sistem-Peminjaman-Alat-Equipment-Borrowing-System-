@@ -64,4 +64,9 @@ class User extends Authenticatable
         return $this->hasMany(LogAktivitas::class);
     }
 
+    // fungsi untuk scope query untuk mengambil data alat yang tersedia (stok > 0 dan status_kondisi = 'baik')
+    public function scopeTersedia($query)
+    {
+        return $query->where('stok', '>', 0)->where('status_kondisi', 'baik');
+    }
 }
