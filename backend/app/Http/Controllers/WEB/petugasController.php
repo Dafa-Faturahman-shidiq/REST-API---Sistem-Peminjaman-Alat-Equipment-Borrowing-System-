@@ -22,7 +22,7 @@ class petugasController extends Controller
             ->where('status', 'diajukan')
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "{%{$search}%}");
+                    $q->where('name', 'like', "%{$search}%");
                 });
             })
             ->latest()
@@ -57,7 +57,7 @@ class petugasController extends Controller
     }
 
     //* Menolak Peminjaman (Menghapus Pengajuan agar siswa bisa mengajukan ulang)
-    public function tolakPeminjamana()
+    public function tolakPeminjaman($id)
     {
         try {
             $peminjaman = Peminjaman::findOrFail($id);
@@ -119,10 +119,10 @@ class petugasController extends Controller
         $search = $request->input('search');
 
         $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian']) 
-            ->where('status', ['diajukan', 'telat'])
+            ->whereIn('status', ['diajukan', 'telat'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "{%{$search}%}");
+                    $q->where('name', 'like', "%{$search}%");
                 });
             })
             ->latest()
