@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
-class pengembalianController extends Controller
+class PengembalianController extends Controller
 {
      // * KELOLA PENGEMBALIAN : Menampilkan halaman utama pengembalian
     public function indexPengembalian(Request $request)

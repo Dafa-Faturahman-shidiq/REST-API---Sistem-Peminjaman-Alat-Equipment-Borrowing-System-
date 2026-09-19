@@ -16,7 +16,7 @@ use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
 
-class alatController extends Controller
+class AlatController extends Controller
 {
     //! ======================= CRUD ALAT =======================
     //* CRUD ALAT : Menampilkan halaman daftar alat

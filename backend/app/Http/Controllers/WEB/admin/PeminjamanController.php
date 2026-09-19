@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
-class peminjamanController extends Controller
+class PeminjamanController extends Controller
 {
     //! ======================= CRUD PEMINJAMAN =======================
 

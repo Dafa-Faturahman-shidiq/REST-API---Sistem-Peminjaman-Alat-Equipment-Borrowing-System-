@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\WEB;
+namespace App\Http\Controllers\WEB\admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
 
-class adminController extends Controller
+class AdminController extends Controller
 {
     //* 1. Menampilkan halaman dashboard admin dan log aktivitas
     public function index()

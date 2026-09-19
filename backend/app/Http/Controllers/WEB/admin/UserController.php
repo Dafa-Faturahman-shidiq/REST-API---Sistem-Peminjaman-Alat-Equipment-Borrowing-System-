@@ -16,7 +16,7 @@ use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
 
-class userController extends Controller
+class UserController extends Controller
 {
     //! ======================= CRUD USER =======================
 
