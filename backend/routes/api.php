@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\KategoriController;
 use App\Http\Controllers\API\AlatController;
+use App\Http\Controllers\API\UserController;
 
 // Routes untuk API AuthController
 Route::post('/register', [AuthController::class, 'register']);
@@ -24,16 +25,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('alat', AlatController::class);
         // Route untuk katalog alat
         Route::get('/katalog',[AlatController::class, 'katalog']);
+        // Route untuk resource user
+        Route::apiResource('users', UserController::class);
     });
 
     Route::middleware(['role.petugas'])->group(function () {
         // Route untuk mendapatkan daftar semua user (hanya untuk petugas)
-        Route::get('/users', [AuthController::class, 'getAllUsers']);
+        Route::get('/petugas/users', [AuthController::class, 'getAllUsers']);
     });
 
     Route::middleware('role.peminjam')->group(function () {
         // Route untuk mendapatkan informasi user yang sedang login (hanya untuk peminjam)
-        Route::get('/user', [AuthController::class, 'getUser']);
+        Route::get('/peminjam/profile', [AuthController::class, 'getUser']);
         // Route untuk katalog alat
         Route::get('/katalog', [AlatController::class, 'katalog']);
     });
