@@ -14,7 +14,7 @@ class PeminjamanObserver
     {
         LogAktivitas::create([
             'user_id' => auth()->id() ?? $peminjaman->user_id,
-            'aktivitas' => "Menambahkan dataa peminjaman baru (ID: {$peminjaman->$id}) dengan Status: {$peminjaman->$status}."
+            'aktivitas' => "Menambahkan dataa peminjaman baru (ID: {$peminjaman->id}) dengan Status: {$peminjaman->status}."
         ]);
     }
 
@@ -36,7 +36,7 @@ class PeminjamanObserver
 
         LogAktivitas::create([
             'user_id' => auth()->id() ?? $peminjaman->user_id,
-            'aktivitas' => "Memperbarui peminjaman ID {$peminjaman->$id}: {$detail_perubahan}"
+            'aktivitas' => "Memperbarui peminjaman ID {$peminjaman->id}: {$detail_perubahan}"
         ]);
     }
 

@@ -27,12 +27,12 @@ class Peminjaman extends Model
     }
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model users
-    public function user(): BelongsTo {
+    public function peminjam(): BelongsTo {
         return $this->belongsTo(User::class);
     }
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model Detail Peminjaman
-    public function detailPinjams(): HasMany {
+    public function detailPinjam(): HasMany {
         return $this->hasMany(DetailPinjam::class);
     }
 

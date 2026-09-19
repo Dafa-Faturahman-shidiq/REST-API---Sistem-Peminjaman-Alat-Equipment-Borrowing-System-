@@ -12,6 +12,7 @@ use App\Models\Alat;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Http\Request;
 
@@ -116,7 +117,7 @@ class AlatController extends Controller
     // Fungsi untuk menampilakan katalog alat dengan kategori terkait
     public function katalog() : JsonResponse
     {
-        $alat = Alat::with('kategori')->tersedia()->latest()->get();
+        $alat = Alat::with('kategori')->where('stok', '>', 0)->latest()->get();
         return response()->json([
             'success' => true,
             'message' => 'Katalog alat berhasil diambil.',
