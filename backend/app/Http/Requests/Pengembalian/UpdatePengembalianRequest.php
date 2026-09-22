@@ -24,7 +24,7 @@ class UpdatePengembalianRequest extends FormRequest
     {
         return [
             'kondisi_kembali' => ['required', 'string', 'max:255'],
-             'denda' => ['nullable', 'integer', 'min:0']
+            'denda' => ['nullable', 'integer', 'min:0']
         ];
     }
 

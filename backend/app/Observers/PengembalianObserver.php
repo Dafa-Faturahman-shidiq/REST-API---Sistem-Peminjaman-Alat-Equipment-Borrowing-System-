@@ -14,7 +14,7 @@ class PengembalianObserver
     {
         LogAktivitas::create([
             'user_id' => auth()->id() ?? $pengembaliann->user_id,
-            'aktivitas' => "Memproses Pengembalian Alat untuk Peminjaman ID: {$pengembalian->$peminjaman_id} 
+            'aktivitas' => "Memproses Pengembalian Alat untuk Peminjaman ID: {$pengembalian->peminjaman_id} 
             dengan kondisi '{$pengembalian->kondisi_kembali}'
             dan denda Rp " . number_format($pengembalian->denda, 0, '0', '.') . "."
         ]);
@@ -28,7 +28,7 @@ class PengembalianObserver
     {
         $changes = [];
 
-        foreach ($pengembaliann->getChanges() as $key => $newValue) {
+        foreach ($pengembalian->getChanges() as $key => $newValue) {
             if ($key !== 'updated_at') {
                 $oldValue = $pengembalian->getOriginal($key);
                 $changes[] = "Kolom '{$key}' berubah dari '{$oldValue}' menjadi '{$newValue}'";
@@ -39,7 +39,7 @@ class PengembalianObserver
 
         LogAktivitas::create([
             'user_id' => auth()->id() ,
-            'aktivitas' => "Memperbarui peminjaman ID {$pengembalian->$id}: {$detail_perubahan}"
+            'aktivitas' => "Memperbarui peminjaman ID {$pengembalian->id}: {$detail_perubahan}"
         ]);
     }
 

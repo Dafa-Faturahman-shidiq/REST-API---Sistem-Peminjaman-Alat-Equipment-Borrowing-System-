@@ -62,7 +62,8 @@ class PeminjamanController extends Controller
 
             return response()->json([
                 'message' => 'Peminjaman berhasil diajukan, Menunggu persetujuan petugas',
-                'data' => new PeminjamanResource($peminjaman)
+                'data' => new PeminjamanResource($peminjaman),
+                'user' => auth()->user()
             ], 201);
 
         } catch (\Throwable $e) {
