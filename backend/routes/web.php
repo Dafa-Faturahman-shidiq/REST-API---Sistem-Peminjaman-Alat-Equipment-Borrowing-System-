@@ -72,15 +72,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // * ROUTES UNTUK PETUGAS
 Route::middleware(['auth', 'role:petugas,admin'])->prefix('petugas')->name('petugas.')->group(function () {
-    Route::get('/peminjaman', [PengembalianController::class, 'indexPeminjaman'])->name('peminjaman.index');
-    Route::post('/peminjaman/{id}/setujui', [PengembalianController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui');
-    Route::post('/peminjaman/{id}/tolak', [PengembalianController::class, 'tolakPeminjaman'])->name('peminjaman.tolak');
+    Route::get('/peminjaman', [PeminjamanController::class, 'indexPeminjaman'])->name('peminjaman.index');
+    Route::post('/peminjaman/{id}/setujui', [PeminjamanController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui');
+    Route::post('/peminjaman/{id}/tolak', [PeminjamanController::class, 'tolakPeminjaman'])->name('peminjaman.tolak');
 
-    Route::get('/pengembalian', [PengembalianController::class, 'indexPengembalian'])->name('pengembalian.index');
-    Route::post('/pengembalian/{id}', [PengembalianController::class, 'prosesPengembalian'])->name('pengembalian.proses');
+    Route::get('/pengembalian', [PetugasController::class, 'indexPengembalian'])->name('pengembalian.index');
+    Route::post('/pengembalian/{id}', [PetugasController::class, 'prosesPengembalian'])->name('pengembalian.proses');
 
-    Route::get('/laporan', [PengembalianController::class, 'laporan'])->name('laporan.index');
-    Route::get('/laporan/cetak', [PengembalianController::class, 'cetakLaporan'])->name('laporan.cetak');
+    Route::get('/laporan', [PetugasController::class, 'laporan'])->name('laporan.index');
+    Route::get('/laporan/cetak', [PetugasController::class, 'cetakLaporan'])->name('laporan.cetak');
 });
 
 //* PEMINJAM

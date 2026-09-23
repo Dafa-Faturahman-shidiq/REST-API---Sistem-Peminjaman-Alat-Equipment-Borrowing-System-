@@ -102,7 +102,7 @@ class PengembalianController extends Controller
                 'petugas_id' => auth()->id(),
                 'tgl_kembali' => $request->tgl_kembali,
                 'kondisi_kembali' => $request->kondisi_kembali,
-                'deskripsi' => $request->deskripsi, // Simpan deskripsi
+                'deskripsi' => $request->deskripsi ?? '-', // Simpan deskripsi
                 'denda' => $total_denda, // Simpan total denda final
             ]);
 
@@ -110,7 +110,7 @@ class PengembalianController extends Controller
 
             // Kembalikan stok alat (Jika hilang, stok TIDAK dikembalikan)
             if ($request->kondisi_kembali != 'hilang') {
-                foreach ($peminjaman->detailPinjams as $detail) {
+                foreach ($peminjaman->detailPinjam as $detail) {
                     $detail->alat->increment('stok', $detail->jumlah);
                 }
             }
@@ -121,6 +121,11 @@ class PengembalianController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withInput()->with('error', $e->getMessage());
+            // dd([
+            //     'message' => $e->getMessage(),
+            //     'file'    => $e->getFile(),
+            //     'line'    => $e->getLine(),
+            // ]);
         }
     }
 

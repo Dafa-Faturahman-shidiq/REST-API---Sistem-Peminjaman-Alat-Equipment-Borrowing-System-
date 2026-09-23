@@ -18,10 +18,10 @@ class petugasController extends Controller
 
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat']) 
+        $peminjamans = Peminjaman::with(['peminjam', 'detailPinjam.alat']) 
             ->where('status', 'diajukan')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('user', function ($q) use ($search) {
+                return $query->whereHas('peminjam', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
@@ -84,7 +84,7 @@ class petugasController extends Controller
         DB::beginTransaction();
         try {
             // ambil data peminjaman beserta detailnya
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($peminjamanId);
+            $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($peminjamanId);
 
             // buat data pengembalian
             $pengembalian = Pengembalian::create([
@@ -99,7 +99,7 @@ class petugasController extends Controller
             $peminjaman->update(['status' => 'selesai']);
 
             // kembalikan stok alat secara otomatis
-            foreach($peminjaman->detailPinjams as $detail){
+            foreach($peminjaman->detailPinjam as $detail){
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok += $detail->jumlah;
                 $alat->save();
@@ -118,10 +118,10 @@ class petugasController extends Controller
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian']) 
+        $peminjamans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian']) 
             ->whereIn('status', ['diajukan', 'telat'])
             ->when($search, function ($query, $search) {
-                return $query->whereHas('user', function ($q) use ($search) {
+                return $query->whereHas('peminjam', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
@@ -138,7 +138,7 @@ class petugasController extends Controller
     $dari_tanggal = $request->input('dari_tanggal');
     $sampai_tanggal = $request->input('sampai_tanggal');
 
-    $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+    $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
         ->when($status, function ($query, $status) {
             return $query->where('status', $status);
         })
@@ -158,7 +158,7 @@ public function cetakLaporan(Request $request)
     $dari_tanggal = $request->input('dari_tanggal');
     $sampai_tanggal = $request->input('sampai_tanggal');
 
-    $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+    $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
         ->when($status, function ($query, $status) {
             return $query->where('status', $status);
         })

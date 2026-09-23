@@ -23,7 +23,7 @@
             </div>
             <div>
                 <h3 class="text-lg font-bold text-slate-800 tracking-tight">Proses Pengembalian Alat</h3>
-                <p class="text-xs text-slate-500">Peminjam: <span class="font-semibold text-slate-700">{{ $peminjaman->user->name ?? 'User' }}</span></p>
+                <p class="text-xs text-slate-500">Peminjam: <span class="font-semibold text-slate-700">{{ $peminjaman->peminjam->name ?? 'User' }}</span></p>
             </div>
         </div>
 
@@ -31,7 +31,7 @@
         <div class="p-8 pb-4 border-b border-slate-100 bg-slate-50/30">
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Daftar Alat yang Dikembalikan:</h4>
             <ul class="space-y-2 bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
-                @foreach($peminjaman->detailPinjams as $detail)
+                @foreach($peminjaman->detailPinjam as $detail)
                     <li class="flex items-center justify-between text-sm">
                         <span class="font-semibold text-slate-700">• {{ $detail->alat->nama_alat ?? 'Alat' }}</span>
                         <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">

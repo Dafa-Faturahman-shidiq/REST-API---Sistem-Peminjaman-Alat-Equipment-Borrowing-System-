@@ -91,7 +91,7 @@
 
                             <!-- Peminjam -->
                             <td class="py-4 px-6 font-bold text-slate-800">
-                                {{ $item->user->name ?? '-' }}
+                                {{ $item->peminjam->name ?? '-' }}
                             </td>
 
                             <!-- Tanggal Pinjam -->
@@ -118,7 +118,7 @@
                             <!-- Detail Alat -->
                             <td class="py-4 px-6">
                                 <ul class="space-y-1">
-                                    @foreach($item->detailPinjams as $detail)
+                                    @foreach($item->detailPinjam as $detail)
                                         <li class="flex items-center gap-2 text-xs">
                                             <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                                             <span class="font-semibold text-slate-700">{{ $detail->alat->nama_alat ?? '-' }}</span>

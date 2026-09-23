@@ -51,13 +51,13 @@
             @forelse($laporans as $index => $item)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td>{{ $item->user->name ?? '-' }}</td>
+                    <td>{{ $item->peminjam->name ?? '-' }}</td>
                     <td>{{ $item->tgl_pinjam }}</td>
                     <td>{{ $item->tgl_kembali_plan }}</td>
                     <td>{{ ucfirst($item->status) }}</td>
                     <td>
                         <ul style="margin: 0; padding-left: 15px;">
-                            @foreach($item->detailPinjams as $detail)
+                            @foreach($item->detailPinjam as $detail)
                                 <li>{{ $detail->alat->nama_alat ?? '-' }} ({{ $detail->jumlah }})</li>
                             @endforeach
                         </ul>
