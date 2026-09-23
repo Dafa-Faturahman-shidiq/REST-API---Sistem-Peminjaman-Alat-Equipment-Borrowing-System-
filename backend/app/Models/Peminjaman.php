@@ -28,17 +28,17 @@ class Peminjaman extends Model
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model users
     public function peminjam(): BelongsTo {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model Detail Peminjaman
     public function detailPinjam(): HasMany {
-        return $this->hasMany(DetailPinjam::class);
+        return $this->hasMany(DetailPinjam::class, 'peminjaman_id');
     }
 
     // fungsi untuk mengatur relasi antara model Peminjaman dan model Pengembalian
     public function pengembalian(): HasOne {
-        return $this->hasOne(Pengembalian::class);
+        return $this->hasOne(Pengembalian::class, 'peminjaman_id');
     }
 
 }

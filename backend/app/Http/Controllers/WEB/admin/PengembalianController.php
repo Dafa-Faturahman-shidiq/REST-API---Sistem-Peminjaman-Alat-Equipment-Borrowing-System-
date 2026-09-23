@@ -23,9 +23,9 @@ class PengembalianController extends Controller
         $search = $request->input('search', '');
 
         // 1. Ambil data riwayat pengembalian yang sudah selesai diproses
-        $pengembalians = Pengembalian::with('peminjaman.user', 'petugas', 'peminjaman.detailPinjams.alat')
+        $pengembalians = Pengembalian::with('peminjaman.peminjam', 'petugas', 'peminjaman.detailPinjam.alat')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('peminjaman.user', function ($q) use ($search) {
+                return $query->whereHas('peminjaman.peminjam', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 })->orWhere('kondisi_kembali', 'like', "%{$search}%");
             })
@@ -34,7 +34,7 @@ class PengembalianController extends Controller
             ->withQueryString();
 
         // 2. Ambil daftar peminjaman yang statusnya sedang 'dipinjam' agar admin tahu barang apa saja yang belum kembali
-        $peminjamanDipinjam = Peminjaman::with('user', 'detailPinjams.alat')
+        $peminjamanDipinjam = Peminjaman::with('peminjam', 'detailPinjam.alat')
             ->where('status', 'dipinjam')
             ->latest()
             ->get();
@@ -45,7 +45,7 @@ class PengembalianController extends Controller
     // * PENGEMBALIAN : Menampilkan form pengembalian alat
     public function createPengembalian($id)
     {
-        $peminjaman = Peminjaman::with('user', 'detailPinjams.alat')->findOrFail($id);
+        $peminjaman = Peminjaman::with('peminjam', 'detailPinjam.alat')->findOrFail($id);
         
         // Pastikan hanya peminjaman yang berstatus 'dipinjam' yang bisa dikembalikan
         if ($peminjaman->status != 'dipinjam') {
@@ -58,7 +58,7 @@ class PengembalianController extends Controller
    // * PENGEMBALIAN : Memproses data pengembalian alat
     public function storePengembalian(Request $request, $id)
     {
-        $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($id);
+        $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($id);
 
         // 1. Validasi Input 
         $request->validate([

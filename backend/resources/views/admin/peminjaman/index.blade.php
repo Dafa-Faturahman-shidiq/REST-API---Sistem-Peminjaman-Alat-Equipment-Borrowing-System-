@@ -53,7 +53,7 @@
                 </form>
 
                 <!-- Tombol Tambah Peminjaman -->
-                <a href="/admin/peminjaman/create" class="group flex items-center justify-center gap-2 bg-slate-800 hover:bg-indigo-600 text-white text-sm font-semibold py-2 px-4 rounded-xl transition-all duration-300 active:scale-95 shadow-sm w-full sm:w-auto whitespace-nowrap">
+                <a href="{{ route('admin.peminjaman.create') }}" class="group flex items-center justify-center gap-2 bg-slate-800 hover:bg-indigo-600 text-white text-sm font-semibold py-2 px-4 rounded-xl transition-all duration-300 active:scale-95 shadow-sm w-full sm:w-auto whitespace-nowrap">
                     <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tambah Peminjaman
                 </a>
@@ -76,23 +76,22 @@
                 <tbody class="text-slate-600 text-sm divide-y divide-slate-50">
                     
                     @forelse($peminjamans as $peminjaman)
-                        <!-- Menggunakan align-top karena ada list barang agar tabel tetap rapi -->
                         <tr class="hover:bg-indigo-50/60 transition-colors duration-200 group align-top">
                             
                             <!-- Kolom Peminjam -->
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600 group-hover:border-indigo-300 group-hover:text-indigo-600 transition-colors">
-                                        {{ strtoupper(substr($peminjaman->user->name ?? 'U', 0, 1)) }}
+                                        {{ strtoupper(substr($peminjaman->peminjam->name ?? 'U', 0, 1)) }}
                                     </div>
-                                    <span class="font-semibold text-slate-700">{{ $peminjaman->user->name ?? 'User Dihapus' }}</span>
+                                    <span class="font-semibold text-slate-700">{{ $peminjaman->peminjam->name ?? 'User Dihapus' }}</span>
                                 </div>
                             </td>
 
                             <!-- Kolom Daftar Alat -->
                             <td class="py-4 px-6">
                                 <ul class="space-y-1.5 list-inside list-disc text-slate-500 marker:text-indigo-400">
-                                    @foreach($peminjaman->detailPinjams as $detail)
+                                    @foreach($peminjaman->detailPinjam as $detail)
                                         <li>
                                             <span class="font-medium text-slate-700">{{ $detail->alat->nama_alat ?? 'Alat Dihapus' }}</span>
                                             <span class="inline-flex items-center justify-center px-2 py-0.5 ml-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-md border border-slate-200 shadow-sm">
@@ -106,12 +105,10 @@
                             <!-- Kolom Tanggal -->
                             <td class="py-4 px-6">
                                 <div class="flex flex-col gap-2">
-                                    <!-- Tgl Pinjam -->
                                     <div class="flex items-center gap-1.5 text-xs text-slate-500">
                                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                         <span>Pinjam: <strong class="text-slate-700">{{ $peminjaman->tgl_pinjam }}</strong></span>
                                     </div>
-                                    <!-- Rencana Kembali -->
                                     <div class="flex items-center gap-1.5 text-xs text-slate-500">
                                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                         <span>Rencana: <strong class="text-slate-700">{{ $peminjaman->tgl_kembali_plan }}</strong></span>
@@ -124,7 +121,7 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border shadow-sm
                                     @if($peminjaman->status == 'diajukan') bg-amber-50 text-amber-700 border-amber-200
                                     @elseif($peminjaman->status == 'dipinjam') bg-blue-50 text-blue-700 border-blue-200
-                                    @elseif($peminjaman->status == 'selesai') bg-emerald-50 text-emerald-700 border-emerald-200
+                                    @elseif($peminjaman->status == 'dikembalikan') bg-emerald-50 text-emerald-700 border-emerald-200
                                     @else bg-red-50 text-red-700 border-red-200
                                     @endif">
                                     {{ ucfirst($peminjaman->status) }}
@@ -144,9 +141,10 @@
                                                     class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg pl-2 pr-6 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer hover:bg-slate-100 transition-colors appearance-none text-slate-600 shadow-sm">
                                                 <option value="diajukan" {{ $peminjaman->status == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
                                                 <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                                                <option value="selesai"  {{ $peminjaman->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                                <option value="telat"    {{ $peminjaman->status == 'telat' ? 'selected' : '' }}>Telat</option>
+                                                <option value="dikembalikan" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
+                                                <option value="telat" {{ $peminjaman->status == 'telat' ? 'selected' : '' }}>Telat</option>
                                             </select>
+                                            
                                             <!-- Custom Dropdown Arrow -->
                                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -154,7 +152,7 @@
                                         </div>
                                     </form>
 
-                                    <!-- Tombol Hapus (Soft Style) -->
+                                    <!-- Tombol Hapus -->
                                     <form action="{{ route('admin.peminjaman.destroy', $peminjaman->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data peminjaman ini?');" class="w-full">
                                         @csrf
                                         @method('DELETE')

@@ -46,11 +46,11 @@
                     @forelse($peminjamanDipinjam as $item)
                         <tr class="hover:bg-amber-50/40 transition-colors">
                             <td class="py-4 px-6 font-semibold text-slate-700">
-                                {{ $item->user->name ?? 'User Dihapus' }}
+                                {{ $item->peminjam->name ?? 'User Dihapus' }}
                             </td>
                             <td class="py-4 px-6">
                                 <ul class="space-y-1 list-inside list-disc text-slate-500 marker:text-amber-500">
-                                    @foreach($item->detailPinjams as $detail)
+                                    @foreach($item->detailPinjam as $detail)
                                         <li>
                                             <span class="font-medium text-slate-700">{{ $detail->alat->nama_alat ?? 'Alat' }}</span>
                                             <span class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500">({{ $detail->jumlah }} pcs)</span>
@@ -122,7 +122,7 @@
                     @forelse($pengembalians as $item)
                         <tr class="hover:bg-indigo-50/60 transition-colors">
                             <td class="py-4 px-6 font-semibold text-slate-700">
-                                {{ $item->peminjaman->user->name ?? '-' }}
+                                {{ $item->peminjaman->peminjam->name ?? '-' }}
                             </td>
                             <td class="py-4 px-6 text-slate-500">
                                 {{ $item->tgl_kembali }}
