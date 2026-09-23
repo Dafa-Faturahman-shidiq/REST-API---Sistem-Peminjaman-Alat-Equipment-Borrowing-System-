@@ -6,6 +6,7 @@ use App\Http\Controllers\API\KategoriController;
 use App\Http\Controllers\API\PeminjamanController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\PengembalianController;
+use App\Http\Controllers\API\LogAktivitasController;
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
@@ -63,6 +64,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pengembalian/{pengembalian}', [PengembalianController::class, 'show']);
         Route::put('/pengembalian/{pengembalian}', [PengembalianController::class, 'update']);
         Route::delete('/pengembalian/{pengembalian}', [PengembalianController::class, 'destroy']);
+
+        // ROUTE LOG AKTIVITAS
+        Route::get('/log-aktivitas',[LogAktivitasController::class, 'index']);
     });
 
 });
