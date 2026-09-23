@@ -12,10 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class petugasController extends Controller
 {
-    // * 1. Menampilkan daftar pengajuan peminjaman dari siswa/peminjam
+    // * 1. Menampilkan daftar pengajuan peminjaman dari peminjam
     public function indexPeminjaman(Request $request)
     {
-
         $search = $request->input('search');
 
         $peminjamans = Peminjaman::with(['peminjam', 'detailPinjam.alat']) 
@@ -36,37 +35,50 @@ class petugasController extends Controller
     {
         DB::beginTransaction();
         try {
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
-            $peminjaman->update(['status' => 'dipinjam']);
+            // 🛠️ PERBAIKAN: Mengubah detailPinjams menjadi detailPinjam
+            $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($id);
 
-            // kurangin stok alat secara otomatis
-            foreach($peminjaman->detailPinjams as $detail){
-                $alat = Alat::findOrFail($detail->alat_id);
-                $alat->stok -= $detail->jumlah;
-                $alat->save();
+            // Cek jika statusnya bukan 'diajukan'
+            if ($peminjaman->status !== 'diajukan') {
+                throw new \Exception("Pengajuan peminjaman ini sudah diproses sebelumnya.");
             }
 
+            // 🛠️ PERBAIKAN: Kurangin stok alat dengan validasi ketersediaan stok
+            foreach ($peminjaman->detailPinjam as $detail) {
+                $alat = Alat::findOrFail($detail->alat_id);
+
+                if ($alat->stok < $detail->jumlah) {
+                    throw new \Exception("Gagal menyetujui. Stok alat '{$alat->nama_alat}' tidak mencukupi (Sisa stok: {$alat->stok}).");
+                }
+
+                $alat->decrement('stok', $detail->jumlah);
+            }
+
+            // Ubah status peminjaman menjadi 'dipinjam'
+            $peminjaman->update(['status' => 'dipinjam']);
+
             DB::commit();
-            return redirect()->back()->with('success', 'Peminjaman disetujui dan stok alat dikurangi.');
+            return redirect()->back()->with('success', 'Peminjaman berhasil disetujui dan stok alat telah dikurangi.');
+
         } catch (\Throwable $th) {
-            DB::rollback();
+            DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
         }
-
-        return redirect()->route('petugas.peminjaman.index')->with('success', 'Peminjaman telah disetujui.');
     }
 
-    //* Menolak Peminjaman (Menghapus Pengajuan agar siswa bisa mengajukan ulang)
+    // * Menolak Peminjaman
     public function tolakPeminjaman($id)
     {
         try {
             $peminjaman = Peminjaman::findOrFail($id);
 
-            // Pastikan statusnya "Diajukan"
+            // Pastikan statusnya "diajukan"
             if ($peminjaman->status == 'diajukan') {
                 $peminjaman->delete();
-                return redirect()->back()->with('success', 'Pegajuan Peminjaman berhasil ditolak.');
+                return redirect()->back()->with('success', 'Pengajuan peminjaman berhasil ditolak.');
             }
+
+            return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk ditolak.');
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
         }
@@ -75,51 +87,50 @@ class petugasController extends Controller
     // * 3. Proses Pengembalian
     public function prosesPengembalian(Request $request, $peminjamanId)
     {
-        // Validasi input
         $request->validate([
             'tgl_kembali' => 'required|date',
+            'kondisi_kembali' => 'required|string',
             'denda' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
-            // ambil data peminjaman beserta detailnya
             $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($peminjamanId);
 
-            // buat data pengembalian
             $pengembalian = Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
-                'tgl_kembali' => now(),
+                'tgl_kembali' => $request->tgl_kembali ?? now()->toDateString(),
                 'kondisi_kembali' => $request->kondisi_kembali,
                 'denda' => $request->denda ?? 0,
-                'petugas_id' => auth()->user()->id,
+                'petugas_id' => auth()->id(),
+                'deskripsi' => $request->deskripsi ?? '-'
             ]);
 
-            // update status peminjaman menjadi 'dikembalikan'
-            $peminjaman->update(['status' => 'selesai']);
+            // Ubah status peminjaman menjadi 'dikembalikan'
+            $peminjaman->update(['status' => 'dikembalikan']);
 
-            // kembalikan stok alat secara otomatis
-            foreach($peminjaman->detailPinjam as $detail){
+            // Kembalikan stok alat secara otomatis
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
-                $alat->stok += $detail->jumlah;
-                $alat->save();
+                $alat->increment('stok', $detail->jumlah);
             }
 
             DB::commit();
             return redirect()->back()->with('success', 'Pengembalian berhasil diproses.');
         } catch (\Throwable $th) {
-            DB::rollback();
+            DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
         }
     }
 
-    // Menampilkan Pemantauan Pengembalian
+    // * Menampilkan Pemantauan Pengembalian
     public function indexPengembalian(Request $request)
     {
         $search = $request->input('search');
 
+        // 🛠️ PERBAIKAN: Mengubah filter status dari ['diajukan', 'telat'] menjadi ['dipinjam', 'telat']
         $peminjamans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian']) 
-            ->whereIn('status', ['diajukan', 'telat'])
+            ->whereIn('status', ['dipinjam', 'telat'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('peminjam', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
@@ -131,44 +142,43 @@ class petugasController extends Controller
         return view('petugas.pengembalian.index', compact('peminjamans', 'search'));
     }
 
-    // menampilakn halaman laporan
+    // * Menampilkan halaman laporan
     public function laporan(Request $request)
-{
-    $status = $request->input('status');
-    $dari_tanggal = $request->input('dari_tanggal');
-    $sampai_tanggal = $request->input('sampai_tanggal');
+    {
+        $status = $request->input('status');
+        $dari_tanggal = $request->input('dari_tanggal');
+        $sampai_tanggal = $request->input('sampai_tanggal');
 
-    $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
-        ->when($status, function ($query, $status) {
-            return $query->where('status', $status);
-        })
-        ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
-            return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
-        })
-        ->latest()
-        ->get();
+        $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
+                return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
+            })
+            ->latest()
+            ->get();
 
-    return view('petugas.laporan.index', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
-}
+        return view('petugas.laporan.index', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
+    }
 
-// Menampilkan halaman khusus cetak (print preview)
-public function cetakLaporan(Request $request)
-{
-    $status = $request->input('status');
-    $dari_tanggal = $request->input('dari_tanggal');
-    $sampai_tanggal = $request->input('sampai_tanggal');
+    // * Menampilkan halaman khusus cetak
+    public function cetakLaporan(Request $request)
+    {
+        $status = $request->input('status');
+        $dari_tanggal = $request->input('dari_tanggal');
+        $sampai_tanggal = $request->input('sampai_tanggal');
 
-    $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
-        ->when($status, function ($query, $status) {
-            return $query->where('status', $status);
-        })
-        ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
-            return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
-        })
-        ->latest()
-        ->get();
+        $laporans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian'])
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
+                return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
+            })
+            ->latest()
+            ->get();
 
-    return view('petugas.laporan.cetak', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
-}
-
+        return view('petugas.laporan.cetak', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
+    }
 }

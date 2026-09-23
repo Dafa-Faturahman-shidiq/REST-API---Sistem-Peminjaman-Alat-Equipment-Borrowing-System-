@@ -4,7 +4,7 @@
 @section('header-title', 'Pemantauan & Proses Pengembalian Alat')
 
 @section('content')
-    <!-- Flash Messages -->
+    <!-- Flash Message Sukses -->
     @if(session('success'))
         <div class="mb-6 flex items-center p-4 text-sm text-emerald-800 border border-emerald-200 rounded-xl bg-emerald-50 shadow-sm animate-fade-in">
             <svg class="w-5 h-5 mr-3 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -12,10 +12,23 @@
         </div>
     @endif
 
+    <!-- Flash Message Error Session -->
     @if(session('error'))
         <div class="mb-6 flex items-center p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 shadow-sm animate-fade-in">
             <svg class="w-5 h-5 mr-3 flex-shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    <!-- 🛠️ TAMBAHAN: Flash Message Validation Errors -->
+    @if($errors->any())
+        <div class="mb-6 p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 shadow-sm animate-fade-in">
+            <div class="font-bold mb-1">Gagal memproses data:</div>
+            <ul class="list-disc list-inside space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -101,28 +114,32 @@
                                 </ul>
                             </td>
                             
-                            <!-- Aksi Pengembalian (Form Input Kondisi & Denda) -->
+                            <!-- Aksi Pengembalian -->
                             <td class="py-4 px-6 text-center">
                                 <form action="{{ route('petugas.pengembalian.proses', $item->id) }}" method="POST" 
-                                      class="inline-block bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-left space-y-3 shadow-sm">
+                                      class="inline-block bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-left space-y-3 shadow-sm min-w-[220px]">
                                     @csrf
                                     
+                                    <!-- 🛠️ TAMBAHAN: Input Hidden Tanggal Kembali Hari Ini -->
+                                    <input type="hidden" name="tgl_kembali" value="{{ date('Y-m-d') }}">
+
                                     <!-- Kondisi Kembali -->
                                     <div>
                                         <label class="block text-xs font-bold text-slate-600 mb-1">Kondisi Kembali:</label>
-                                        <select name="kondisi_kembali" required 
-                                                class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-slate-700">
-                                            <option value="Baik">Baik</option>
-                                            <option value="Rusak Ringan">Rusak Ringan</option>
-                                            <option value="Rusak Berat">Rusak Berat</option>
+                                        <select name="kondisi_kembali" id="kondisi_{{ $item->id }}" required 
+                                                onchange="hitungkalkulasiDenda({{ $item->id }}, '{{ $item->status }}', '{{ $item->tgl_kembali_plan }}')"
+                                                class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-slate-700 cursor-pointer">
+                                            <option value="baik">Baik</option>
+                                            <option value="rusak_ringan">Rusak Ringan</option>
+                                            <option value="rusak_berat">Rusak Berat</option>
                                         </select>
                                     </div>
 
                                     <!-- Denda -->
                                     <div>
                                         <label class="block text-xs font-bold text-slate-600 mb-1">Denda (Rp):</label>
-                                        <input type="number" name="denda" value="0" placeholder="0" 
-                                               class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-slate-700">
+                                        <input type="number" name="denda" id="denda_{{ $item->id }}" value="{{ $item->status == 'telat' ? 10000 : 0 }}" placeholder="0" min="0"
+                                               class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-bold text-slate-800">
                                     </div>
 
                                     <!-- Tombol Submit -->
@@ -152,4 +169,30 @@
             </table>
         </div>
     </div>
+
+    <!-- SCRIPT JAVASCRIPT KALKULASI DENDA OTOMATIS -->
+    <script>
+        function hitungkalkulasiDenda(id, status, tglKembaliPlan) {
+            const kondisiSelect = document.getElementById('kondisi_' + id);
+            const dendaInput = document.getElementById('denda_' + id);
+
+            let dendaKondisi = 0;
+            const kondisi = kondisiSelect.value;
+
+            if (kondisi === 'rusak_ringan') {
+                dendaKondisi = 20000;
+            } else if (kondisi === 'rusak_berat') {
+                dendaKondisi = 50000;
+            } else {
+                dendaKondisi = 0;
+            }
+
+            let dendaTelat = 0;
+            if (status === 'telat') {
+                dendaTelat = 10000;
+            }
+
+            dendaInput.value = dendaKondisi + dendaTelat;
+        }
+    </script>
 @endsection
