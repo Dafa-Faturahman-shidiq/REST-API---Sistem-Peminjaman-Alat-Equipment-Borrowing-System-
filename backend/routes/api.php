@@ -7,6 +7,7 @@ use App\Http\Controllers\API\PeminjamanController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\PengembalianController;
 use App\Http\Controllers\API\LogAktivitasController;
+use App\Http\Controllers\API\LaporanController;
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
@@ -41,7 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/petugas/users', [AuthController::class, 'getAllUsers']);
         Route::get('/petugas/peminjaman', [PeminjamanController::class, 'index']); // Untuk melihat daftar pengajuan
         Route::post('/petugas/peminjaman/{peminjaman}/approve', [PeminjamanController::class, 'approve']);
+
         Route::post('/pengembalian', [PengembalianController::class, 'store']);
+
+        Route::get('/laporan-peminjaman', [LaporanController::class, 'index']);
     });
 
     // ==========================================
