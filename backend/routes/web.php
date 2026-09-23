@@ -11,7 +11,7 @@ use App\Http\Controllers\WEB\admin\PeminjamanController;
 use App\Http\Controllers\WEB\admin\PengembalianController;
 
 use App\Http\Controllers\WEB\petugasController;
-use App\Http\Controllers\WEB\peminjamController;
+use App\Http\Controllers\WEB\PeminjamController;
 use App\Http\Controllers\WEB\AuthController;
 
 Route::get('/', function () {
