@@ -28,11 +28,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ==========================================
     // 2. ROLE PEMINJAM (Pengajuan & Riwayat)
     // ==========================================
-    Route::middleware('role.peminjam')->group(function () {
-        Route::post('/peminjaman', [PeminjamanController::class, 'store']);
-        Route::get('/riwayat-pinjam', [PeminjamanController::class, 'riwayat']);
-        Route::put('/peminjaman/{peminjaman}', [PeminjamanController::class, 'update']);
-        Route::delete('/peminjaman/{peminjaman}', [PeminjamanController::class, 'destroy']);
+    Route::middleware(['auth:sanctum', 'role:peminjam'])->prefix('peminjam')->group(function () {
+        Route::get('/katalog', [\App\Http\Controllers\Api\PeminjamController::class, 'indexKatalog']);
+        Route::post('/peminjaman', [\App\Http\Controllers\Api\PeminjamController::class, 'storePeminjaman']);
+        Route::get('/riwayat', [\App\Http\Controllers\Api\PeminjamController::class, 'riwayatPeminjaman']);
     });
 
     // ==========================================
