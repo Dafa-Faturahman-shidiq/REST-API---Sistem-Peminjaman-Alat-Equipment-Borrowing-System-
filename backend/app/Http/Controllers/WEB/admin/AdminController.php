@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Models\Kategori;
 use App\Models\DetailPinjam;
 
-
 class AdminController extends Controller
 {
     //* 1. Menampilkan halaman dashboard admin dan log aktivitas
@@ -25,11 +24,11 @@ class AdminController extends Controller
         $total_alat = Alat::count(); 
         $stok_tersedia = Alat::sum('stok'); 
 
-        // Status disesuaikan dengan enum/kolom di database Anda
-        $sedang_dipinjam = Peminjaman::where('status', 'dipinjam')->count(); 
+        // Menghitung transaksi dengan status 'dipinjam' dan 'disetujui_parsial'
+        $sedang_dipinjam = Peminjaman::whereIn('status', ['dipinjam', 'disetujui_parsial'])->count();
         $menunggu_persetujuan = Peminjaman::where('status', 'diajukan')->count();
 
-        // Mengambil log aktivitas
+        // Mengambil log aktivitas terbaru
         $logs = LogAktivitas::with('user')->latest()->take(5)->get();
 
         return view('admin.dashboard', compact(
@@ -40,4 +39,4 @@ class AdminController extends Controller
             'logs'
         ));
     }
- }
+}

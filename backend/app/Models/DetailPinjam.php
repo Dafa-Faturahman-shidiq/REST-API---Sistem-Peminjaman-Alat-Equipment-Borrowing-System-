@@ -1,17 +1,20 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailPinjam extends Model
 {
+    use HasFactory;
     protected $table = 'detail_peminjaman';
     protected $fillable = [
         'peminjaman_id',
         'alat_id',
         'jumlah',
+        'status',           
+        'alasan_penolakan', 
     ];
 
     // fungsi untuk mengatur tipe data dari atribut jumlah

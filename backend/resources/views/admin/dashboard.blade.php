@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <!-- GRID STATISTIK RINGKASAN (NEW) -->
+    <!-- GRID STATISTIK RINGKASAN -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         <!-- Card 1: Total Semua Alat -->
@@ -78,7 +78,6 @@
 
         <!-- Card 4: Menunggu Persetujuan -->
         <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-amber-100/50 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
-            <!-- Indikator Dot Pulse jika ada request pending -->
             @if(($menunggu_persetujuan ?? 0) > 0)
                 <span class="absolute top-4 right-4 flex h-3 w-3">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -99,10 +98,9 @@
 
     </div>
 
-    <!-- TABEL LOG AKTIVITAS (Modern Card Style) -->
+    <!-- TABEL LOG AKTIVITAS -->
     <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50">
         
-        <!-- Header Tabel -->
         <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
             <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600 shadow-inner">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -110,7 +108,6 @@
             <h3 class="text-lg font-bold text-slate-800 tracking-tight">Log Aktivitas Terbaru</h3>
         </div>
 
-        <!-- Wrapper Tabel untuk Responsif -->
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -121,21 +118,17 @@
                     </tr>
                 </thead>
                 <tbody class="text-slate-600 text-sm divide-y divide-slate-50">
-                    
                     @forelse($logs ?? [] as $log)
                         <tr class="hover:bg-indigo-50/60 transition-colors duration-200 group">
-                            <!-- Kolom Waktu -->
                             <td class="py-4 px-6 whitespace-nowrap">
                                 <div class="flex items-center gap-2 text-slate-500 group-hover:text-indigo-600 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <span class="font-medium">{{ $log->created_at }}</span>
+                                    <span class="font-medium">{{ $log->created_at->format('Y-m-d H:i') }}</span>
                                 </div>
                             </td>
                             
-                            <!-- Kolom User -->
                             <td class="py-4 px-6 font-medium text-slate-700">
                                 <div class="flex items-center gap-3">
-                                    <!-- Avatar Inisial Bulat -->
                                     <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
                                         {{ strtoupper(substr($log->user->name ?? 'S', 0, 1)) }}
                                     </div>
@@ -143,13 +136,11 @@
                                 </div>
                             </td>
                             
-                            <!-- Kolom Aktivitas -->
                             <td class="py-4 px-6 text-slate-600">
                                 {{ $log->aktivitas }}
                             </td>
                         </tr>
                     @empty
-                        <!-- Data Kosong -->
                         <tr>
                             <td colspan="3" class="py-12 text-center">
                                 <div class="flex flex-col items-center justify-center text-slate-400">
@@ -159,7 +150,6 @@
                             </td>
                         </tr>
                     @endforelse
-
                 </tbody>
             </table>
         </div>

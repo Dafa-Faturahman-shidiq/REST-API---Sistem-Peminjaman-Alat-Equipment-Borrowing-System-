@@ -18,13 +18,14 @@
             <!-- Filter Status -->
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Status Peminjaman:</label>
-                <select name="status" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium text-slate-700">
-                    <option value="">Semua Status</option>
-                    <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
-                    <option value="dipinjam" {{ request('status') == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                    <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                    <option value="telat" {{ request('status') == 'telat' ? 'selected' : '' }}>Telat</option>
-                </select>
+                    <select name="status" class="...">
+                        <option value="">Semua Status</option>
+                        <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
+                        <option value="dipinjam" {{ request('status') == 'dipinjam' ? 'selected' : '' }}>Dipinjam (Full)</option>
+                        <option value="disetujui_parsial" {{ request('status') == 'disetujui_parsial' ? 'selected' : '' }}>Disetujui Parsial</option>
+                        <option value="dikembalikan" {{ request('status') == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
+                        <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                    </select>
             </div>
 
             <!-- Dari Tanggal -->

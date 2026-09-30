@@ -29,6 +29,7 @@
                     <option value="dipinjam" {{ request('status') == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
                     <option value="dikembalikan" {{ request('status') == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
                     <option value="telat" {{ request('status') == 'telat' ? 'selected' : '' }}>Telat</option>
+                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </form>
         </div>
@@ -41,23 +42,43 @@
                         <th class="py-4 px-6">Alat yang Dipinjam</th>
                         <th class="py-4 px-6">Tgl Pinjam</th>
                         <th class="py-4 px-6">Rencana Kembali</th>
-                        <th class="py-4 px-6 text-center">Status</th>
+                        <th class="py-4 px-6 text-center">Status Utama</th>
                         <th class="py-4 px-6 text-right">Denda / Catatan</th>
                     </tr>
                 </thead>
                 <tbody class="text-slate-600 text-xs divide-y divide-slate-100 font-medium">
                     @forelse($peminjamans as $item)
                         <tr class="hover:bg-slate-50/80 transition align-top">
-                            <!-- Detail Alat -->
+                            <!-- Detail Alat dengan Status Per-Item -->
                             <td class="py-4 px-6">
-                                <ul class="space-y-1">
+                                <ul class="space-y-2">
                                     @foreach($item->detailPinjam as $detail)
-                                        <li class="flex items-center gap-2">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                                            <span class="font-bold text-slate-800">{{ $detail->alat->nama_alat ?? 'Alat Dihapus' }}</span>
-                                            <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-md">
-                                                {{ $detail->jumlah }} pcs
-                                            </span>
+                                        <li class="p-2 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col gap-1">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                                    <span class="font-bold text-slate-800">{{ $detail->alat->nama_alat ?? 'Alat Dihapus' }}</span>
+                                                    <span class="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-md">
+                                                        {{ $detail->jumlah }} pcs
+                                                    </span>
+                                                </div>
+
+                                                <!-- Status Per Item Barang -->
+                                                @if($detail->status == 'disetujui')
+                                                    <span class="px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md">Disetujui</span>
+                                                @elseif($detail->status == 'ditolak')
+                                                    <span class="px-2 py-0.5 text-[10px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200 rounded-md">Ditolak</span>
+                                                @else
+                                                    <span class="px-2 py-0.5 text-[10px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 rounded-md">Menunggu</span>
+                                                @endif
+                                            </div>
+
+                                            <!-- Tampilkan Alasan Penolakan Jika Item Ditolak -->
+                                            @if($detail->status == 'ditolak' && $detail->alasan_penolakan)
+                                                <div class="text-[10px] text-rose-600 font-semibold pl-3 border-l-2 border-rose-400 mt-0.5">
+                                                    Alasan: {{ $detail->alasan_penolakan }}
+                                                </div>
+                                            @endif
                                         </li>
                                     @endforeach
                                 </ul>
@@ -69,19 +90,20 @@
                             <!-- Rencana Kembali -->
                             <td class="py-4 px-6 whitespace-nowrap">{{ $item->tgl_kembali_plan }}</td>
 
-                            <!-- Status Badge -->
+                            <!-- Status Badge Utama -->
                             <td class="py-4 px-6 text-center whitespace-nowrap">
                                 <span class="px-3 py-1 rounded-full text-[11px] font-extrabold border shadow-sm inline-block
                                     @if($item->status == 'diajukan') bg-amber-50 text-amber-700 border-amber-200
                                     @elseif($item->status == 'dipinjam') bg-blue-50 text-blue-700 border-blue-200
                                     @elseif($item->status == 'dikembalikan') bg-emerald-50 text-emerald-700 border-emerald-200
-                                    @else bg-red-50 text-red-700 border-red-200
+                                    @elseif($item->status == 'disetujui_parsial') bg-indigo-50 text-indigo-700 border-indigo-200
+                                    @else bg-rose-50 text-rose-700 border-rose-200
                                     @endif">
-                                    {{ ucfirst($item->status) }}
+                                    {{ $item->status == 'disetujui_parsial' ? 'Disetujui Parsial' : ucfirst($item->status) }}
                                 </span>
                             </td>
 
-                            <!-- Denda & Catatan -->
+                            <!-- Denda & Catatan Pengembalian -->
                             <td class="py-4 px-6 text-right whitespace-nowrap">
                                 @if($item->pengembalian)
                                     <div class="font-bold text-slate-800">
