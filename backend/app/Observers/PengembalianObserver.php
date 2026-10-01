@@ -12,13 +12,12 @@ class PengembalianObserver
      */
     public function created(Pengembalian $pengembalian): void
     {
+        $dendaFormatted = number_format($pengembalian->denda, 0, ',', '.');
+
         LogAktivitas::create([
-            'user_id' => auth()->id() ?? $pengembaliann->user_id,
-            'aktivitas' => "Memproses Pengembalian Alat untuk Peminjaman ID: {$pengembalian->peminjaman_id} 
-            dengan kondisi '{$pengembalian->kondisi_kembali}'
-            dan denda Rp " . number_format($pengembalian->denda, 0, '0', '.') . "."
+            'user_id' => auth()->id() ?? $pengembalian->petugas_id, 
+            'aktivitas' => "Memproses pengembalian alat untuk Peminjaman ID #{$pengembalian->peminjaman_id} (Kondisi: {$pengembalian->kondisi_kembali}, Denda: Rp {$dendaFormatted})"
         ]);
-        
     }
 
     /**
@@ -38,8 +37,8 @@ class PengembalianObserver
         $detail_perubahan = !empty($changes) ? implode(', ', $changes) : 'Memperbarui Data';
 
         LogAktivitas::create([
-            'user_id' => auth()->id() ,
-            'aktivitas' => "Memperbarui peminjaman ID {$pengembalian->id}: {$detail_perubahan}"
+            'user_id' => auth()->id() ?? $pengembalian->petugas_id,
+            'aktivitas' => "Memperbarui data pengembalian ID #{$pengembalian->id}: {$detail_perubahan}"
         ]);
     }
 
@@ -49,8 +48,8 @@ class PengembalianObserver
     public function deleted(Pengembalian $pengembalian): void
     {
         LogAktivitas::create([
-            'user_id' => auth()->id(),
-            'aktivitas' => "Menghapus Data Peminjaman (ID: {$peminjaman->id})"
+            'user_id' => auth()->id() ?? $pengembalian->petugas_id,
+            'aktivitas' => "Menghapus data pengembalian (ID: {$pengembalian->id})" // 🛠️ FIX: $peminjaman->id -> $pengembalian->id
         ]);
     }
 

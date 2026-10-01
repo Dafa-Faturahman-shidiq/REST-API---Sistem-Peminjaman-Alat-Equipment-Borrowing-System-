@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Peminjaman;
-use App\Models\DetailPinjam; // 🛠️ TAMBAHAN: Import model DetailPeminjaman
+use App\Models\DetailPinjam; // 🛠️ Model utama yang digunakan
 use App\Models\Pengembalian;
 use App\Models\Alat;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ class petugasController extends Controller
                 throw new \Exception("Pengajuan peminjaman ini sudah diproses sebelumnya.");
             }
 
-            // A. JIKA DIPROSES LEWAT MODAL PARSIAL (Mengirimkan Array 'items')
+            // A. JIKA DIPROSES LEWAT MODAL PARSIAL
             if ($request->has('items')) {
                 $request->validate([
                     'items' => 'required|array',
@@ -60,12 +60,10 @@ class petugasController extends Controller
                     $alat = Alat::findOrFail($detail->alat_id);
 
                     if ($itemData['status'] === 'disetujui') {
-                        // Validasi stok
                         if ($alat->stok < $detail->jumlah) {
                             throw new \Exception("Gagal menyetujui. Stok alat '{$alat->nama_alat}' tidak mencukupi (Sisa stok: {$alat->stok}).");
                         }
 
-                        // Kurangi stok jika disetujui
                         $alat->decrement('stok', $detail->jumlah);
                         $detail->update([
                             'status' => 'disetujui',
@@ -73,7 +71,6 @@ class petugasController extends Controller
                         ]);
                         $totalDisetujui++;
                     } else {
-                        // Jika ditolak, stok TIDAK berkurang
                         $detail->update([
                             'status' => 'ditolak',
                             'alasan_penolakan' => $itemData['alasan_penolakan'] ?? 'Stok alat tidak mencukupi'
@@ -82,7 +79,6 @@ class petugasController extends Controller
                     }
                 }
 
-                // Tentukan status akhir transaksi peminjaman induk
                 if ($totalDisetujui > 0 && $totalDitolak > 0) {
                     $statusAkhir = 'disetujui_parsial';
                 } elseif ($totalDisetujui > 0 && $totalDitolak === 0) {
@@ -94,7 +90,7 @@ class petugasController extends Controller
                 $peminjaman->update(['status' => $statusAkhir]);
 
             } else {
-                // B. JIKA DIPROSES LANGSUNG TANPA MODAL (Persetujuan Semua Barang)
+                // B. PERSETUJUAN SEMUA BARANG
                 foreach ($peminjaman->detailPinjam as $detail) {
                     $alat = Alat::findOrFail($detail->alat_id);
 
@@ -126,7 +122,6 @@ class petugasController extends Controller
         try {
             $peminjaman = Peminjaman::findOrFail($id);
 
-            // Pastikan statusnya "diajukan"
             if ($peminjaman->status == 'diajukan') {
                 $peminjaman->update(['status' => 'ditolak']);
                 return redirect()->back()->with('success', 'Pengajuan peminjaman berhasil ditolak.');
@@ -138,45 +133,63 @@ class petugasController extends Controller
         }
     }
 
-    // * 3. Proses Pengembalian
+    // * 3. Proses Pengembalian Per-Item
     public function prosesPengembalian(Request $request, $peminjamanId)
     {
         $request->validate([
             'tgl_kembali' => 'required|date',
-            'kondisi_kembali' => 'required|string',
-            'denda' => 'nullable|numeric|min:0',
+            'items' => 'required|array',
+            'items.*.detail_id' => 'required|exists:detail_peminjaman,id',
+            'items.*.kondisi_kembali' => 'required|in:baik,rusak_ringan,rusak_berat,hilang',
+            'items.*.denda' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
             $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($peminjamanId);
 
-            $pengembalian = Pengembalian::create([
-                'peminjaman_id' => $peminjaman->id,
-                'tgl_kembali' => $request->tgl_kembali ?? now()->toDateString(),
-                'kondisi_kembali' => $request->kondisi_kembali,
-                'denda' => $request->denda ?? 0,
-                'petugas_id' => auth()->id(),
-                'deskripsi' => $request->deskripsi ?? '-'
-            ]);
+            $totalDendaKerusakan = 0;
 
-            // Ubah status peminjaman menjadi 'dikembalikan'
-            $peminjaman->update(['status' => 'dikembalikan']);
+            foreach ($request->items as $itemData) {
+                // 🛠️ FIX: Menggunakan DetailPinjam (bukan DetailPeminjaman)
+                $detail = DetailPinjam::findOrFail($itemData['detail_id']);
 
-            // Kembalikan stok alat secara otomatis (Hanya untuk item yang dulu disetujui)
-            foreach ($peminjaman->detailPinjam as $detail) {
-                // Jika pakai kolom status di detail, pastikan hanya item disetujui yang dikembalikan stoknya
-                if (!isset($detail->status) || $detail->status === 'disetujui') {
+                $dendaItem = $itemData['denda'] ?? 0;
+
+                // Update kondisi & denda per item
+                $detail->update([
+                    'kondisi_kembali' => $itemData['kondisi_kembali'],
+                    'denda' => $dendaItem,
+                ]);
+
+                $totalDendaKerusakan += $dendaItem;
+
+                // Kembalikan stok alat HANYA jika barang TIDAK HILANG
+                if ($itemData['kondisi_kembali'] !== 'hilang') {
                     $alat = Alat::findOrFail($detail->alat_id);
                     $alat->increment('stok', $detail->jumlah);
                 }
             }
 
+            // Catat di tabel pengembalian utama
+            Pengembalian::create([
+                'peminjaman_id' => $peminjaman->id,
+                'tgl_kembali' => $request->tgl_kembali ?? now()->toDateString(),
+                'kondisi_kembali' => $totalDendaKerusakan > 0 ? 'rusak_ringan' : 'baik',
+                'denda' => $totalDendaKerusakan,
+                'petugas_id' => auth()->id(),
+                'deskripsi' => 'Pengembalian alat diproses oleh petugas'
+            ]);
+
+            // Ubah status peminjaman menjadi 'dikembalikan'
+            $peminjaman->update(['status' => 'dikembalikan']);
+
             DB::commit();
-            return redirect()->back()->with('success', 'Pengembalian berhasil diproses.');
+            return redirect()->back()->with('success', 'Pengembalian berhasil diproses dan stok telah diperbarui!');
+
         } catch (\Throwable $th) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses pengembalian: ' . $th->getMessage());
         }
     }
 
@@ -185,7 +198,6 @@ class petugasController extends Controller
     {
         $search = $request->input('search');
 
-        // Menampilkan transaksi dengan status 'dipinjam', 'disetujui_parsial', atau 'telat'
         $peminjamans = Peminjaman::with(['peminjam', 'detailPinjam.alat', 'pengembalian']) 
             ->whereIn('status', ['dipinjam', 'disetujui_parsial', 'telat'])
             ->when($search, function ($query, $search) {

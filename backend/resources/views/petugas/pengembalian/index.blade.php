@@ -1,30 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Pemantauan Pengembalian - Dashboard Petugas')
-@section('header-title', 'Pemantauan & Proses Pengembalian Alat')
-
 @section('content')
-    <!-- Flash Message Sukses -->
+
+    <!-- Flash Notifications (Biar Error Kelihatan) -->
     @if(session('success'))
-        <div class="mb-6 flex items-center p-4 text-sm text-emerald-800 border border-emerald-200 rounded-xl bg-emerald-50 shadow-sm animate-fade-in">
-            <svg class="w-5 h-5 mr-3 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="font-medium">{{ session('success') }}</span>
+        <div class="mb-6 p-4 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
+            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="font-bold">{{ session('success') }}</span>
         </div>
     @endif
 
-    <!-- Flash Message Error Session -->
     @if(session('error'))
-        <div class="mb-6 flex items-center p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 shadow-sm animate-fade-in">
-            <svg class="w-5 h-5 mr-3 flex-shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="font-medium">{{ session('error') }}</span>
+        <div class="mb-6 p-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
+            <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="font-bold">{{ session('error') }}</span>
         </div>
     @endif
 
-    <!-- 🛠️ TAMBAHAN: Flash Message Validation Errors -->
     @if($errors->any())
-        <div class="mb-6 p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 shadow-sm animate-fade-in">
-            <div class="font-bold mb-1">Gagal memproses data:</div>
-            <ul class="list-disc list-inside space-y-1">
+        <div class="mb-6 p-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-2xl">
+            <div class="font-bold mb-1">Terjadi kesalahan input:</div>
+            <ul class="list-disc list-inside text-xs">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -32,167 +28,134 @@
         </div>
     @endif
 
-    <!-- Main Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        
-        <!-- Card Header & Search -->
-        <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <h3 class="text-lg font-bold text-slate-800 tracking-tight">Daftar Peminjaman Aktif</h3>
-                <p class="text-sm text-slate-500 mt-1">Pantau alat yang sedang dipinjam dan proses pengembaliannya.</p>
-            </div>
-            
-            <form action="{{ route('petugas.pengembalian.index') }}" method="GET" class="flex w-full md:w-auto gap-2">
-                <div class="relative w-full md:w-72">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama peminjam..." 
-                           class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-sm">
-                </div>
-                <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm active:scale-95">
-                    Cari
-                </button>
-                @if(request('search'))
-                    <a href="{{ route('petugas.pengembalian.index') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center transition-all border border-slate-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </a>
-                @endif
-            </form>
-        </div>
+    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-xl font-bold mb-4 text-slate-800">Pemantauan Pengembalian Alat</h2>
 
-        <!-- Table Data -->
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-white border-b border-slate-200">
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Peminjam</th>
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Tgl Pinjam</th>
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Rencana Kembali</th>
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest">Detail Alat</th>
-                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Aksi Pengembalian</th>
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-50 uppercase text-slate-500 font-bold border-b">
+                    <tr>
+                        <th class="p-3">Peminjam</th>
+                        <th class="p-3">Tanggal Pinjam</th>
+                        <th class="p-3">Detail Barang Disetujui</th>
+                        <th class="p-3 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="text-slate-600 text-sm divide-y divide-slate-100">
-                    @forelse($peminjamans as $item)
-                        <tr class="hover:bg-slate-50/80 transition-colors align-top group">
-                            <!-- Peminjam -->
-                            <td class="py-4 px-6 font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">
-                                {{ $item->peminjam->name ?? 'User Dihapus' }}
-                            </td>
-                            
-                            <!-- Tanggal Pinjam -->
-                            <td class="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
-                                {{ $item->tgl_pinjam }}
-                            </td>
-                            
-                            <!-- Rencana Kembali -->
-                            <td class="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
-                                {{ $item->tgl_kembali_plan }}
-                            </td>
-                            
-                            <!-- Status -->
-                            <td class="py-4 px-6 whitespace-nowrap">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold {{ $item->status == 'telat' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200' }}">
-                                    {{ ucfirst($item->status) }}
-                                </span>
-                            </td>
-
-                            <!-- Detail Alat -->
-                            <td class="py-4 px-6">
-                                <ul class="space-y-1.5">
-                                    @foreach($item->detailPinjam as $detail)
-                                        <li class="flex items-center gap-2">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                                            <span class="font-semibold text-slate-700">{{ $detail->alat->nama_alat ?? 'Alat Dihapus' }}</span>
-                                            <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold rounded-md">
-                                                {{ $detail->jumlah }} pcs
-                                            </span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </td>
-                            
-                            <!-- Aksi Pengembalian -->
-                            <td class="py-4 px-6 text-center">
-                                <form action="{{ route('petugas.pengembalian.proses', $item->id) }}" method="POST" 
-                                      class="inline-block bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-left space-y-3 shadow-sm min-w-[220px]">
-                                    @csrf
-                                    
-                                    <!-- 🛠️ TAMBAHAN: Input Hidden Tanggal Kembali Hari Ini -->
-                                    <input type="hidden" name="tgl_kembali" value="{{ date('Y-m-d') }}">
-
-                                    <!-- Kondisi Kembali -->
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-600 mb-1">Kondisi Kembali:</label>
-                                        <select name="kondisi_kembali" id="kondisi_{{ $item->id }}" required 
-                                                onchange="hitungkalkulasiDenda({{ $item->id }}, '{{ $item->status }}', '{{ $item->tgl_kembali_plan }}')"
-                                                class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-slate-700 cursor-pointer">
-                                            <option value="baik">Baik</option>
-                                            <option value="rusak_ringan">Rusak Ringan</option>
-                                            <option value="rusak_berat">Rusak Berat</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Denda -->
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-600 mb-1">Denda (Rp):</label>
-                                        <input type="number" name="denda" id="denda_{{ $item->id }}" value="{{ $item->status == 'telat' ? 10000 : 0 }}" placeholder="0" min="0"
-                                               class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-bold text-slate-800">
-                                    </div>
-
-                                    <!-- Tombol Submit -->
-                                    <button type="submit" onclick="return confirm('Proses pengembalian alat ini?')" 
-                                            class="w-full inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/20 active:scale-95">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Terima Pengembalian
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                <tbody>
+                    @forelse($peminjamans as $pinjam)
+                    <tr class="border-b hover:bg-slate-50/50 transition">
+                        <td class="p-3 font-bold text-slate-800">{{ $pinjam->peminjam->name ?? 'User' }}</td>
+                        <td class="p-3 text-slate-600">{{ $pinjam->tgl_pinjam }}</td>
+                        <td class="p-3">
+                            <ul class="space-y-1">
+                                @foreach($pinjam->detailPinjam as $detail)
+                                    @if(is_null($detail->status) || $detail->status == 'disetujui' || $detail->status == 'pending')
+                                        <li class="text-slate-700">• {{ $detail->alat->nama_alat ?? 'Alat' }} <span class="font-bold">({{ $detail->jumlah }} pcs)</span></li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="bukaModalPengembalian({{ json_encode($pinjam) }})" 
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl transition shadow-sm active:scale-95">
+                                Proses Pengembalian
+                            </button>
+                        </td>
+                    </tr>
                     @empty
-                        <!-- Empty State -->
-                        <tr>
-                            <td colspan="6" class="py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3 border border-slate-100">
-                                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                                    </div>
-                                    <h4 class="text-sm font-bold text-slate-600">Tidak Ada Peminjaman Aktif</h4>
-                                    <p class="text-sm text-slate-400 mt-1">Tidak ada peminjaman yang sedang aktif saat ini.</p>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-slate-400">Tidak ada alat yang sedang dipinjam.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT KALKULASI DENDA OTOMATIS -->
+    <!-- MODAL PROSES PENGEMBALIAN PER-ITEM -->
+    <div id="modalPengembalian" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-base text-slate-800">Proses Pengembalian Barang</h3>
+                <button onclick="tutupModalPengembalian()" class="text-slate-400 hover:text-slate-600 font-bold text-lg p-1">✕</button>
+            </div>
+
+            <form id="formProsesKembali" action="" method="POST" class="mt-4 space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Pengembalian</label>
+                    <input type="date" name="tgl_kembali" value="{{ date('Y-m-d') }}" class="w-full text-xs p-2.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50">
+                </div>
+
+                <div class="space-y-3 max-h-80 overflow-y-auto pr-1" id="itemKembaliContainer">
+                    <!-- Generator JS -->
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex gap-2">
+                    <button type="button" onclick="tutupModalPengembalian()" class="w-1/3 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl text-xs hover:bg-slate-200 transition">Batal</button>
+                    <button type="submit" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-500/20 active:scale-95">Simpan & Selesaikan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        function hitungkalkulasiDenda(id, status, tglKembaliPlan) {
-            const kondisiSelect = document.getElementById('kondisi_' + id);
-            const dendaInput = document.getElementById('denda_' + id);
+    function bukaModalPengembalian(pinjam) {
+        const form = document.getElementById('formProsesKembali');
+        form.action = `/petugas/pengembalian/${pinjam.id}/proses`;
 
-            let dendaKondisi = 0;
-            const kondisi = kondisiSelect.value;
+        const container = document.getElementById('itemKembaliContainer');
+        container.innerHTML = '';
 
-            if (kondisi === 'rusak_ringan') {
-                dendaKondisi = 20000;
-            } else if (kondisi === 'rusak_berat') {
-                dendaKondisi = 50000;
-            } else {
-                dendaKondisi = 0;
-            }
+        // Ambil item disetujui, pending, atau null (data lama)
+        const itemsDisetujui = pinjam.detail_pinjam.filter(d => d.status === 'disetujui' || d.status === null || d.status === 'pending');
 
-            let dendaTelat = 0;
-            if (status === 'telat') {
-                dendaTelat = 10000;
-            }
+        itemsDisetujui.forEach((detail, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2';
 
-            dendaInput.value = dendaKondisi + dendaTelat;
+            const namaAlat = detail.alat ? detail.alat.nama_alat : 'Alat';
+
+            div.innerHTML = `
+                <input type="hidden" name="items[${index}][detail_id]" value="${detail.id}">
+                <div class="flex justify-between items-center">
+                    <h5 class="font-bold text-xs text-slate-800">${namaAlat} (${detail.jumlah} pcs)</h5>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500">Kondisi Barang</label>
+                        <select name="items[${index}][kondisi_kembali]" onchange="cekDendaAuto(${index}, this.value)" class="w-full text-xs p-2 border border-slate-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <option value="baik">Baik (Tanpa Denda)</option>
+                            <option value="rusak_ringan">Rusak Ringan</option>
+                            <option value="rusak_berat">Rusak Berat</option>
+                            <option value="hilang">Hilang</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500">Denda Barang Ini (Rp)</label>
+                        <input type="number" id="inputDenda_${index}" name="items[${index}][denda]" value="0" min="0" placeholder="0" class="w-full text-xs p-2 border border-slate-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-indigo-500/50">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('modalPengembalian').classList.remove('hidden');
+    }
+
+    function cekDendaAuto(index, kondisi) {
+        const inputDenda = document.getElementById(`inputDenda_${index}`);
+        if (kondisi === 'baik') {
+            inputDenda.value = 0;
+        } else if (kondisi === 'rusak_ringan') {
+            inputDenda.value = 15000;
+        } else if (kondisi === 'rusak_berat' || kondisi === 'hilang') {
+            inputDenda.value = 50000;
         }
+    }
+
+    function tutupModalPengembalian() {
+        document.getElementById('modalPengembalian').classList.add('hidden');
+    }
     </script>
 @endsection

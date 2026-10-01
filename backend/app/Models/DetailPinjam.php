@@ -15,6 +15,8 @@ class DetailPinjam extends Model
         'jumlah',
         'status',           
         'alasan_penolakan', 
+        'kondisi_kembali', 
+        'denda',           
     ];
 
     // fungsi untuk mengatur tipe data dari atribut jumlah
