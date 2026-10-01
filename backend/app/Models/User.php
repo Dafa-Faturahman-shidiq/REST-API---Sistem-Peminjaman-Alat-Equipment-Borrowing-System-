@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Laravel\Scout\Searchable; // 1. Import Scout Searchable
 
@@ -16,6 +17,8 @@ class User extends Authenticatable
 {
     use Searchable; // 2. Gunakan trait Searchable di sini
     use HasApiTokens, Notifiable;
+    use SoftDeletes;
+    
 
     protected $table = 'users';
 

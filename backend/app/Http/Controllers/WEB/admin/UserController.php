@@ -111,13 +111,31 @@ class UserController extends Controller
     // * CRUD USER : Menghapus user dari database
     public function destroyUser($id)
     {
-        // 1. Ambil data user berdasarkan ID
-        $user = User::findOrFail($id);
+        try {
+            $user = User::findOrFail($id);
 
-        // 2. Hapus user dari database
-        $user->delete();
+            // 1. Proteksi: Mencegah Admin menghapus akunnya sendiri yang sedang digunakan
+            if ($user->id === auth()->id()) {
+                return redirect()->back()->with('error', 'Gagal! Anda tidak dapat menghapus akun Anda sendiri yang sedang digunakan.');
+            }
 
-        // 4. Redirect kembali ke halaman daftar user dengan pesan sukses
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
+            // 2. Proteksi: Cek apakah user masih punya transaksi peminjaman aktif
+            // (Pastikan 'user_id' sesuai dengan nama kolom di tabel peminjaman kamu, misal 'peminjam_id')
+            $adaPeminjamanAktif = Peminjaman::where('user_id', $user->id)
+                ->whereIn('status', ['diajukan', 'dipinjam', 'disetujui_parsial', 'telat'])
+                ->exists();
+
+            if ($adaPeminjamanAktif) {
+                return redirect()->back()->with('error', 'Gagal menghapus! User ini masih memiliki alat yang belum dikembalikan.');
+            }
+
+            // 3. Eksekusi Hapus (Sangat disarankan Model User memakai trait SoftDeletes)
+            $user->delete();
+
+            return redirect()->back()->with('success', 'User berhasil dihapus.');
+
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
+        }
     }
 }

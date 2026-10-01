@@ -52,20 +52,19 @@ class PeminjamanController extends Controller
     public function storePeminjaman(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'tgl_pinjam' => 'required|date',
+            'user_id'          => 'required|exists:users,id',
+            'tgl_pinjam'       => 'required|date|after_or_equal:today',
             'tgl_kembali_plan' => 'required|date|after_or_equal:tgl_pinjam',
-            'alat_id' => 'required|array',
-            'alat_id.*' => 'required|exists:alat,id',
-            'jumlah' => 'required|array',
-            'jumlah.*' => 'required|integer|min:1',
+            'items'            => 'required|array|min:1',
+            'items.*.alat_id'  => 'required|exists:alat,id|distinct',
+            'items.*.jumlah'   => 'required|integer|min:1',
         ]);
 
         DB::beginTransaction();
 
         try {
             $peminjaman = Peminjaman::create([
-                'user_id' => $request->user_id,
+                'user_id' => auth()->id(),
                 'tgl_pinjam' => $request->tgl_pinjam,
                 'tgl_kembali_plan' => $request->tgl_kembali_plan,
                 'status' => 'diajukan',

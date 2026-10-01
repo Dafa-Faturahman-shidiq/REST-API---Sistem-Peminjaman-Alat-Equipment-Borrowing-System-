@@ -27,9 +27,9 @@ class AlatController extends Controller
         $alats = Alat::with('kategori') // Eager load kategori untuk menghindari N+1 problem
             ->when($search, function ($query, $search) {
                 return $query->where('nama_alat', 'like', "%{$search}%")
-                             ->orWhereHas('kategori', function ($query) use ($search) {
-                                 $query->where('nama_kategori', 'like', "%{$search}%");
-                             });
+                        ->orWhereHas('kategori', function ($query) use ($search) {
+                            $query->where('nama_kategori', 'like', "%{$search}%");
+                        });
             })
             ->latest()
             ->paginate(10) // Tampilkan 10 data per halaman  
@@ -118,15 +118,34 @@ class AlatController extends Controller
     // * CRUD ALAT : Menghapus alat dari database
     public function destroyAlat($id)
     {
-        $alat = Alat::findOrFail($id);
+        try {
+            $alat = Alat::findOrFail($id);
 
-        // Hapus file gambar fisik jika ada
-        if ($alat->gambar && file_exists(public_path('storage/alats/' . $alat->gambar))) {
-            unlink(public_path('storage/alats/' . $alat->gambar));
+            // 1. Validasi: Cek apakah alat sedang dalam pengajuan atau sedang dipinjam
+            $sedangDipinjam = DetailPinjam::where('alat_id', $alat->id)
+                ->whereHas('peminjaman', function ($query) {
+                    $query->whereIn('status', ['diajukan', 'dipinjam', 'disetujui_parsial', 'telat']);
+                })
+                ->exists();
+
+            if ($sedangDipinjam) {
+                return redirect()->back()->with('error', 'Gagal menghapus! Alat ini sedang dipinjam atau dalam proses pengajuan.');
+            }
+
+            // 2. Hapus file gambar fisik jika ada (pilih salah satu sesuai metode simpan kamu)
+            if ($alat->gambar) {
+                if (Storage::disk('public')->exists('alats/' . $alat->gambar)) {
+                    Storage::disk('public')->delete('alats/' . $alat->gambar);
+                }
+            }
+
+            // 3. Hapus data dari database
+            $alat->delete();
+
+            return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil dihapus.');
+
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
         }
-
-        $alat->delete();
-
-        return redirect()->route('admin.alat.index')->with('success', 'Data alat berhasil dihapus.');
     }
 }

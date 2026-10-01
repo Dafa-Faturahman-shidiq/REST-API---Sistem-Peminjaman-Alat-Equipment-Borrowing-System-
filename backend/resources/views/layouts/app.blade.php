@@ -138,6 +138,7 @@
             <!-- KONTEN UTAMA HALAMAN -->
             <!-- Animasi masuk diterapkan di main ini -->
             <main class="flex-1 p-8 animate-fade-in">
+                @include('partials.alerts')
                 @yield('content')
             </main>
 

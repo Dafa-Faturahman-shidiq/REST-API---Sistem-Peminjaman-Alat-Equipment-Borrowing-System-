@@ -85,12 +85,22 @@ class KategoriController extends Controller
     // * CRUD KATEGORI : Menghapus kategori dari database
     public function destroyKategori($id)
     {
-        // 1. Ambil data kategori berdasarkan ID
-        $kategori = Kategori::findOrFail($id);
+        try {
+            $kategori = Kategori::findOrFail($id);
 
-        // 2. Hapus data kategori dari database
-        $kategori->delete();
+            // 1. Validasi: Cek apakah masih ada alat yang terikat dengan kategori ini
+            // Opsi A (Gunakan relasi jika di Model Kategori ada function alats()):
+            if ($kategori->alat()->exists()) {
+                return redirect()->back()->with('error', 'Gagal menghapus! Masih ada alat yang terdaftar dalam kategori ini.');
+            }
 
-        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus.');
+            // 2. Eksekusi Hapus jika sudah bersih dari alat
+            $kategori->delete();
+
+            return redirect()->back()->with('success', 'Kategori berhasil dihapus.');
+
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $th->getMessage());
+        }
     }
 }
